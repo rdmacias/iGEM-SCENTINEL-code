@@ -3,5 +3,5 @@
 r-limonene
 L-Linalool
 hexanal
-benzaldehyde 
+benzaldehyde
 1-hexanol

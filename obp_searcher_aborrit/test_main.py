@@ -12,9 +12,7 @@ import pytest
 from main import (
     BIG_KI_VALUE,
     DEFAULT_WEIGHTS,
-    SELECTIVITY_TAU,
     TYPE_SCORES,
-    TYPE_SCORE_UNKNOWN,
     convert_ki_to_float,
     # find_voc_rows — eliminada, substituïda per validar_voc
     read_interferent_file,
@@ -281,22 +279,23 @@ class TestComputeS4Stability:
         s4 = compute_s4_stability("CSP")
         assert s4 == pytest.approx(0.40)
  
-    def test_tipus_desconegut_retorna_default(self):
+    def test_tipus_desconegut_retorna_nan(self):
+        # Tipus no reconegut → sense dada fiable → NaN (es descarta i renormalitza)
         s4 = compute_s4_stability("Unknown OBP Type")
-        assert s4 == pytest.approx(TYPE_SCORE_UNKNOWN)
- 
-    def test_nan_retorna_default(self):
+        assert math.isnan(s4)
+
+    def test_nan_retorna_nan(self):
         s4 = compute_s4_stability(np.nan)
-        assert s4 == pytest.approx(TYPE_SCORE_UNKNOWN)
- 
+        assert math.isnan(s4)
+
     def test_tipus_amb_espais_funciona(self):
         # El codi fa .strip() abans de buscar al diccionari
         s4 = compute_s4_stability("  Classic OBP  ")
         assert s4 == pytest.approx(1.00)
- 
-    def test_string_buit_retorna_default(self):
+
+    def test_string_buit_retorna_nan(self):
         s4 = compute_s4_stability("")
-        assert s4 == pytest.approx(TYPE_SCORE_UNKNOWN)
+        assert math.isnan(s4)
  
     def test_resultat_sempre_entre_0_i_1(self):
         for obp_type in TYPE_SCORES.keys():
@@ -322,20 +321,20 @@ class TestComputeS4Stability:
         assert s4_minus == s4_plus
  
     def test_jerarquia_completa(self):
-        """Verificar la jerarquia: Classic > PBP/GOBP > Minus/Plus-C > Atypical > CSP > Unknown."""
+        """Verificar la jerarquia: Classic > PBP/GOBP > Minus/Plus-C > Atypical > CSP."""
         scores = {
             "Classic":  compute_s4_stability("Classic OBP"),
             "PBP":      compute_s4_stability("PBP"),
             "Minus_C":  compute_s4_stability("Minus-C OBP"),
             "Atypical": compute_s4_stability("Atypical OBP"),
             "CSP":      compute_s4_stability("CSP"),
-            "Unknown":  compute_s4_stability("Foo"),
         }
         assert scores["Classic"] > scores["PBP"]
         assert scores["PBP"]     > scores["Minus_C"]
         assert scores["Minus_C"] > scores["Atypical"]
         assert scores["Atypical"] > scores["CSP"]
-        assert scores["CSP"]     > scores["Unknown"]
+        # Tipus no reconegut → NaN, no es pot ordenar contra la resta
+        assert math.isnan(compute_s4_stability("Foo"))
  
     @pytest.mark.parametrize("obp_type,expected", [
         ("Classic OBP",  1.00),
@@ -360,35 +359,38 @@ class TestComputeS4Stability:
 #
 # Penalitza competidors que s'uneixen MÉS FORT que el diana (Ki_c < Ki_diana).
 # Competidors febles o iguals (Ki_c >= Ki_diana) → penalització 0.
-# Casos invàlids (sense competidors o diana invàlida) → retorna 0.5 (neutral).
- 
+# Casos invàlids (sense competidors o diana invàlida) → retorna 0.0.
+# (has_s5_data, calculat a part a build_obp_ranking, marca aquests casos
+# com a "sense dada" perquè el criteri es descarti i es renormalitzin els pesos,
+# en lloc de comptar aquest 0.0 com una promiscuïtat real coneguda.)
+
 class TestComputeS5Promiscuity:
- 
-    # ── Casos límit: retornen valor neutral (0.5) ──────────────────────
- 
-    def test_sense_competidors_retorna_neutral(self):
-        # Series buida → score neutral (0.5)
+
+    # ── Casos límit: retornen 0.0 (sense dada fiable) ──────────────────
+
+    def test_sense_competidors_retorna_zero(self):
+        # Series buida → cap dada fiable → 0.0
         ki_competitors = pd.Series([], dtype=float)
         s5 = compute_s5_promiscuity(ki_diana=5.0, ki_competitors=ki_competitors)
-        assert s5 == pytest.approx(0.5)
- 
-    def test_tots_competidors_nan_retorna_neutral(self):
-        # Tots NaN → cap mesura vàlida → score neutral (0.5)
+        assert s5 == pytest.approx(0.0)
+
+    def test_tots_competidors_nan_retorna_zero(self):
+        # Tots NaN → cap mesura vàlida → 0.0
         ki_competitors = pd.Series([np.nan, np.nan, np.nan])
         s5 = compute_s5_promiscuity(ki_diana=5.0, ki_competitors=ki_competitors)
-        assert s5 == pytest.approx(0.5)
- 
-    def test_ki_diana_nan_retorna_neutral(self):
-        # Diana invàlida → score neutral (0.5)
+        assert s5 == pytest.approx(0.0)
+
+    def test_ki_diana_nan_retorna_zero(self):
+        # Diana invàlida → 0.0
         ki_competitors = pd.Series([1.0, 2.0, 3.0])
         s5 = compute_s5_promiscuity(ki_diana=np.nan, ki_competitors=ki_competitors)
-        assert s5 == pytest.approx(0.5)
- 
-    def test_ki_diana_zero_retorna_neutral(self):
-        # Diana = 0 → score neutral (0.5)
+        assert s5 == pytest.approx(0.0)
+
+    def test_ki_diana_zero_retorna_zero(self):
+        # Diana = 0 → 0.0
         ki_competitors = pd.Series([1.0, 2.0])
         s5 = compute_s5_promiscuity(ki_diana=0.0, ki_competitors=ki_competitors)
-        assert s5 == pytest.approx(0.5)
+        assert s5 == pytest.approx(0.0)
  
     # ── Competidors més fluixos que el diana → s5 = 1 (cap penalització) ──
  
@@ -850,4 +852,220 @@ class TestBuildObpRanking:
         assert specific_s5 > promiscuous_s5
         assert specific_s5 > 0.9       # Tots els competidors fluixos → s5 ≈ 1.0
         assert promiscuous_s5 < 0.15   # Tots els competidors forts → s5 ≈ 0.10
+
+
+# ──────────────────────────────────────────────
+# 8. Escenaris de dades d'interferents per a s2
+# ──────────────────────────────────────────────
+#
+# Tres escenaris reals que es poden donar amb un fitxer d'interferents:
+#   A) Sense interferents          → cap OBP pot tenir s2 fiable
+#   B) Interferents mixtos         → alguns OBPs tenen TOTS els interferents
+#                                     mesurats, altres no, altres cap
+#   C) Interferents complets       → TOTS els OBPs tenen TOTS els interferents
+#
+# OBP_A: Interferent1 i Interferent2 mesurats     → cobertura completa
+# OBP_B: només Interferent1 mesurat               → cobertura parcial
+# OBP_C: cap interferent mesurat                  → sense cobertura
+
+def _binding_table_interferents(tots_complets=False):
+    """Taula amb un VOC diana i 2 interferents.
+    tots_complets=True  → escenari C: TOTS els OBPs amb els 2 interferents mesurats.
+    tots_complets=False → escenari B: OBP_A complet, OBP_B parcial (li falta
+                           Interferent2), OBP_C sense cap interferent mesurat.
+    """
+    # OBP_A: Interferent1=20 dona s2=0.4 (ni 0 ni 1) — necessari per poder
+    # detectar si el pes de selectivitat afecta o no el Score final.
+    return pd.DataFrame({
+        'CAS':  ['T-1', 'I-1', 'I-2'],
+        'Name': ['TargetVOC', 'Interferent1', 'Interferent2'],
+        'OBP_A': [5.0, 20.0, 80.0],
+        'OBP_B': [5.0, 60.0, (70.0 if tots_complets else np.nan)],
+        'OBP_C': [5.0, (40.0 if tots_complets else np.nan), (45.0 if tots_complets else np.nan)],
+    })
+
+
+@pytest.fixture
+def dades_interferents():
+    obp_info = pd.DataFrame({
+        'Binding Protein Name': ['OBP_A', 'OBP_B', 'OBP_C'],
+        'Binding Protein Type': ['Classic OBP', 'Classic OBP', 'Classic OBP'],
+        'Cystine count':        [6, 6, 6],
+        'Species':              ['Apis mellifera'] * 3,
+        'UniProtID':            ['-', '-', '-'],
+        'Alphafold':            ['-', '-', '-'],
+    })
+    ki_diana = pd.Series({'OBP_A': 5.0, 'OBP_B': 5.0, 'OBP_C': 5.0})
+    weights  = {'w_affinity': 0.45, 'w_selectivity': 0.25,
+                'w_stability': 0.15, 'w_promiscuity': 0.15}
+    return obp_info, ki_diana, weights
+
+
+def _build(binding, obp_info, ki_diana, weights, interferent_list):
+    return build_obp_ranking(
+        ki_values_diana=ki_diana,
+        obp_info_table=obp_info,
+        binding_table=binding,
+        cas_col='CAS',
+        name_col='Name',
+        interferent_list=interferent_list,
+        obp_name_list=['OBP_A', 'OBP_B', 'OBP_C'],
+        weights=weights,
+        ki_min_matrix=5.0,
+        ki_max_matrix=80.0,
+    )
+
+
+class TestEscenariSenseInterferents:
+    """A) Cap interferent definit (fitxer buit / no proporcionat)."""
+
+    def test_cap_obp_te_s2_fiable(self, dades_interferents):
+        obp_info, ki_diana, weights = dades_interferents
+        binding = _binding_table_interferents()
+        result = _build(binding, obp_info, ki_diana, weights, interferent_list=[])
+
+        assert not result['has_s2_data'].any()
+        assert not result['has_all_interferents'].any()
+
+    def test_s2_es_neutre_per_tots(self, dades_interferents):
+        obp_info, ki_diana, weights = dades_interferents
+        binding = _binding_table_interferents()
+        result = _build(binding, obp_info, ki_diana, weights, interferent_list=[])
+
+        assert (result['s2_selectivity'] == 0.5).all()
+
+    def test_score_no_depen_del_pes_de_selectivitat(self, dades_interferents):
+        """Sense dades de s2, el pes de selectivitat es descarta i renormalitza
+        per a TOTS els OBPs — el resultat ha de ser idèntic encloure's o no
+        un pes de selectivitat alt, perquè mai s'arriba a usar."""
+        obp_info, ki_diana, _ = dades_interferents
+        binding = _binding_table_interferents()
+
+        weights_baixa = {'w_affinity': 0.45, 'w_selectivity': 0.0,
+                          'w_stability': 0.15, 'w_promiscuity': 0.15}
+        weights_alta  = {'w_affinity': 0.45, 'w_selectivity': 0.90,
+                          'w_stability': 0.15, 'w_promiscuity': 0.15}
+
+        result_baixa = _build(binding, obp_info, ki_diana, weights_baixa, interferent_list=[])
+        result_alta  = _build(binding, obp_info, ki_diana, weights_alta,  interferent_list=[])
+
+        pd.testing.assert_series_equal(
+            result_baixa.set_index('OBP')['Score'],
+            result_alta.set_index('OBP')['Score'],
+        )
+
+
+class TestEscenariInterferentsMixtos:
+    """B) Alguns OBPs amb tots els interferents mesurats, altres amb només
+    alguns, altres amb cap — el cas típic en dades reals incompletes."""
+
+    def test_has_all_interferents_nomes_per_lobp_complet(self, dades_interferents):
+        obp_info, ki_diana, weights = dades_interferents
+        binding = _binding_table_interferents(tots_complets=False)
+        result = _build(
+            binding, obp_info, ki_diana, weights,
+            interferent_list=['Interferent1', 'Interferent2'],
+        ).set_index('OBP')
+
+        assert result.loc['OBP_A', 'has_all_interferents'] == True
+        assert result.loc['OBP_B', 'has_all_interferents'] == False
+        assert result.loc['OBP_C', 'has_all_interferents'] == False
+
+    def test_has_s2_data_segons_cobertura_parcial(self, dades_interferents):
+        # OBP_B té només 1 dels 2 interferents mesurats → has_s2_data=True
+        # (és fiable que cap interferent amagat lligui MENYS, però no que
+        # cap n'amagui un de pitjor — per això Taula 1 exigeix has_all_interferents).
+        obp_info, ki_diana, weights = dades_interferents
+        binding = _binding_table_interferents(tots_complets=False)
+        result = _build(
+            binding, obp_info, ki_diana, weights,
+            interferent_list=['Interferent1', 'Interferent2'],
+        ).set_index('OBP')
+
+        assert result.loc['OBP_A', 'has_s2_data'] == True
+        assert result.loc['OBP_B', 'has_s2_data'] == True
+        assert result.loc['OBP_C', 'has_s2_data'] == False
+
+    def test_n_interferents_missing_correcte(self, dades_interferents):
+        obp_info, ki_diana, weights = dades_interferents
+        binding = _binding_table_interferents(tots_complets=False)
+        result = _build(
+            binding, obp_info, ki_diana, weights,
+            interferent_list=['Interferent1', 'Interferent2'],
+        ).set_index('OBP')
+
+        assert result.loc['OBP_A', 'N_interferents_missing'] == 0
+        assert result.loc['OBP_B', 'N_interferents_missing'] == 1
+        assert result.loc['OBP_C', 'N_interferents_missing'] == 2
+
+    def test_score_de_obp_c_no_depen_de_selectivitat(self, dades_interferents):
+        """OBP_C no té cap dada de s2 → el seu Score no pot canviar si
+        només es mou el pes de selectivitat (es descarta i renormalitza)."""
+        obp_info, ki_diana, _ = dades_interferents
+        binding = _binding_table_interferents(tots_complets=False)
+
+        weights_baixa = {'w_affinity': 0.45, 'w_selectivity': 0.0,
+                          'w_stability': 0.15, 'w_promiscuity': 0.15}
+        weights_alta  = {'w_affinity': 0.45, 'w_selectivity': 0.90,
+                          'w_stability': 0.15, 'w_promiscuity': 0.15}
+
+        result_baixa = _build(
+            binding, obp_info, ki_diana, weights_baixa,
+            interferent_list=['Interferent1', 'Interferent2'],
+        ).set_index('OBP')
+        result_alta = _build(
+            binding, obp_info, ki_diana, weights_alta,
+            interferent_list=['Interferent1', 'Interferent2'],
+        ).set_index('OBP')
+
+        assert result_baixa.loc['OBP_C', 'Score'] == pytest.approx(result_alta.loc['OBP_C', 'Score'])
+        # En canvi OBP_A (que sí té s2 fiable) ha de canviar
+        assert result_baixa.loc['OBP_A', 'Score'] != pytest.approx(result_alta.loc['OBP_A', 'Score'])
+
+
+class TestEscenariInterferentsComplets:
+    """C) TOTS els OBPs tenen TOTS els interferents mesurats → s2 fiable
+    per a tots, Taula 1 inclou tothom."""
+
+    def test_has_all_interferents_per_tots(self, dades_interferents):
+        obp_info, ki_diana, weights = dades_interferents
+        binding = _binding_table_interferents(tots_complets=True)
+        result = _build(
+            binding, obp_info, ki_diana, weights,
+            interferent_list=['Interferent1', 'Interferent2'],
+        )
+
+        assert result['has_all_interferents'].all()
+
+    def test_has_s2_data_per_tots(self, dades_interferents):
+        obp_info, ki_diana, weights = dades_interferents
+        binding = _binding_table_interferents(tots_complets=True)
+        result = _build(
+            binding, obp_info, ki_diana, weights,
+            interferent_list=['Interferent1', 'Interferent2'],
+        )
+
+        assert result['has_s2_data'].all()
+
+    def test_cap_falta_interferent(self, dades_interferents):
+        obp_info, ki_diana, weights = dades_interferents
+        binding = _binding_table_interferents(tots_complets=True)
+        result = _build(
+            binding, obp_info, ki_diana, weights,
+            interferent_list=['Interferent1', 'Interferent2'],
+        )
+
+        assert (result['N_interferents_missing'] == 0).all()
+
+    def test_min_ki_interferent_correcte(self, dades_interferents):
+        # OBP_A: min(20, 80) = 20 ; OBP_C: min(40, 45) = 40
+        obp_info, ki_diana, weights = dades_interferents
+        binding = _binding_table_interferents(tots_complets=True)
+        result = _build(
+            binding, obp_info, ki_diana, weights,
+            interferent_list=['Interferent1', 'Interferent2'],
+        ).set_index('OBP')
+
+        assert result.loc['OBP_A', 'Min_Ki_interferent_uM'] == pytest.approx(20.0)
+        assert result.loc['OBP_C', 'Min_Ki_interferent_uM'] == pytest.approx(40.0)
  
