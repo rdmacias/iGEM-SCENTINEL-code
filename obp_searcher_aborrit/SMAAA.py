@@ -107,12 +107,12 @@ def _generar_pesos_smaa(rng, n_iter, n_crit):
 
 def smaa_complet(subscores, te_dada, n_iter=200_000,
                  pesos_base=None, c=30.0,
-                 mode="dirichlet", seed=None,
+                 mode="perturbacio", seed=None,
                  chunk_size=20_000):
     """
     Anàlisi SMAA vectoritzat per suportar moltes iteracions sense bloquejar.
 
-    mode='dirichlet'  – pesos Dirichlet al voltant de pesos_base amb dispersió c%.
+    mode='perturbacio'  – pesos perturbats al voltant de pesos_base amb dispersió c%.
                         NO retorna central_weights (sempre None).
     mode='smaa'       – pesos Dirichlet uniformes (totalment aleatoris).
                         SÍ retorna central_weights per a cada candidat.
@@ -122,9 +122,9 @@ def smaa_complet(subscores, te_dada, n_iter=200_000,
     subscores  : (m, n_crit) float – sub-scores de cada OBP per a cada criteri
     te_dada    : (m, n_crit) bool  – True si la dada existeix; False → s'usa valor aleatori
     n_iter     : total d'iteracions de Monte Carlo
-    pesos_base : llista de n_crit pesos (necessari per mode='dirichlet')
-    c          : % de dispersió Dirichlet (mode='dirichlet')
-    mode       : 'dirichlet' | 'smaa'
+    pesos_base : llista de n_crit pesos (necessari per mode='perturbacio')
+    c          : % de dispersió de la perturbació (mode='perturbacio')
+    mode       : 'perturbacio' | 'smaa'
     seed       : llavor per a reproductibilitat
     chunk_size : iteracions per lot (controla l'ús de memòria)
 
@@ -139,13 +139,13 @@ def smaa_complet(subscores, te_dada, n_iter=200_000,
     m, n_crit = S.shape
     rng = np.random.default_rng(seed)
 
-    if mode not in ("dirichlet", "smaa"):
-        raise ValueError("mode ha de ser 'dirichlet' o 'smaa'")
-    if mode == "dirichlet" and pesos_base is None:
-        raise ValueError("mode='dirichlet' necessita pesos_base")
+    if mode not in ("perturbacio", "smaa"):
+        raise ValueError("mode ha de ser 'perturbacio' o 'smaa'")
+    if mode == "perturbacio" and pesos_base is None:
+        raise ValueError("mode='perturbacio' necessita pesos_base")
 
     # Genera tots els pesos d'una vegada (forma: (n_iter, n_crit))
-    if mode == "dirichlet":
+    if mode == "perturbacio":
         pesos_aleatoris = _generar_pesos_salts(rng, n_iter, pesos_base, c)
     else:
         pesos_aleatoris = _generar_pesos_smaa(rng, n_iter, n_crit)

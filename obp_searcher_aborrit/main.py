@@ -3,18 +3,27 @@ import sys
 import re
 import pandas as pd
 import numpy as np
+import confianca as cf
 from SMAAA import smaa_complet 
+
+
+DIAG_FILE = os.path.join("results", "tanimoto_diag_table.csv")
+MIN_CONF_FILTRE = None   # posa 0.8 per veure només els fiables
  
  
  
-BINDING_FILE  = "Compound_OBP_binding.csv"
-INFO_FILE     = "OBP_info_new.csv"
- 
+BINDING_FILE_EXPERIMENTAL      = "Compound_OBP_binding.csv"
+# Amb informació predita (opció [2]) fem servir DOS fitxers diferents:
+#   - BINDING_FILE_PREDICTED            → selectivitat (s2): Ki dels interferents
+#   - BINDING_FILE_PREDICTED_AFFINITY   → afinitat (s1): Ki del VOC diana
+BINDING_FILE_PREDICTED          = "Compound_OBP_binding_imputed_lower.csv"
+BINDING_FILE_PREDICTED_AFFINITY = "Compound_OBP_binding_imputed_pred.csv"
+INFO_FILE                       = "OBP_info_new.csv"
+
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+
 BEST_OBP_TYPE = "Classic OBP"
 BEST_CYS_NUM  = 6
- 
-BIG_KI_VALUE  = 1000.0   # μM — valor quan el paper diu ">XX"
- 
  
  
 DEFAULT_WEIGHTS = {
@@ -40,6 +49,58 @@ TYPE_SCORES = {
 }
  
  
+# ── SELECCIÓ DE FONTS DE DADES DE BINDING ───────────────────────────────────
+ 
+def infer_s1_source_label(selected_value, experimental_value, binding_source_label):
+    """Etiqueta si l's1 prové de dades experimentals o de la matriu imputada/predita."""
+    source = str(binding_source_label or "").strip().lower()
+    if source == "experimental":
+        return "experimental"
+
+    if pd.isna(selected_value) or pd.isna(experimental_value):
+        return "new (tanimoto)"
+
+    if np.isclose(selected_value, experimental_value):
+        return "experimental"
+
+    return "new (tanimoto)"
+
+
+def resolve_data_file(file_name):
+    """Resolveix una ruta de fitxer relativa a la carpeta del script."""
+    if not file_name:
+        return file_name
+
+    if os.path.isabs(file_name):
+        return file_name
+
+    for candidate in (
+        file_name,
+        os.path.join(SCRIPT_DIR, file_name),
+        os.path.join(os.getcwd(), file_name),
+    ):
+        if os.path.isfile(candidate):
+            return candidate
+
+    return os.path.join(SCRIPT_DIR, file_name)
+
+
+def select_binding_source():
+    """Pregunta si s'ha d'usar només informació experimental o dades amb imputació/predit."""
+    print("\nTipus de dades de binding:")
+    print(f"  [1] Només informació experimental  → {BINDING_FILE_EXPERIMENTAL}")
+    print(f"  [2] Amb informació predita         → selectivitat: {BINDING_FILE_PREDICTED}")
+    print(f"                                       afinitat:     {BINDING_FILE_PREDICTED_AFFINITY}")
+
+    while True:
+        raw = input("Selecciona [1/2, per defecte 1]: ").strip().lower()
+        if raw in ("", "1", "experimental", "exp", "e"):
+            return BINDING_FILE_EXPERIMENTAL, "experimental"
+        if raw in ("2", "predicted", "prediccio", "pred", "p"):
+            return BINDING_FILE_PREDICTED, "predicted"
+        print("  ✗ Opció invàlida. Tria 1 o 2.")
+
+
 # ── LLEGIR I NETEJAR ELS CSV ──────────────────────────────────────────────────
  
 def convert_ki_to_float(raw_value):
@@ -54,7 +115,7 @@ def convert_ki_to_float(raw_value):
             number = float(re.sub(r'[^\d.]', '', text))
             return number * 1.1
         except ValueError:
-            return BIG_KI_VALUE
+            return np.nan
  
     try:
         return float(text)
@@ -355,7 +416,7 @@ def compute_s1_affinity(ki_diana, ki_min_matrix, ki_max_matrix):
  
 def compute_s2_selectivity(ki_diana, ki_min_interferent, tau=10.0):
     if pd.isna(ki_min_interferent) or pd.isna(ki_diana) or ki_diana <= 0:
-        return 0.5  # neutral: sense dades de selectivitat
+        return 0.0  #  sense dades de selectivitat
  
     ratio = ki_min_interferent / (ki_diana * tau)
     return float(min(1.0, ratio))
@@ -402,19 +463,34 @@ def compute_final_score(s1, s2, s4, s5, weights):
  
 def build_obp_ranking(ki_values_diana, obp_info_table, binding_table,
                       cas_col, name_col, interferent_list, obp_name_list, weights,
-                      ki_min_matrix, ki_max_matrix, tau=10.0):
- 
+                      ki_min_matrix, ki_max_matrix, tau=10.0,
+                      experimental_ki_values_diana=None, binding_source_label="experimental",
+                      ki_values_diana_affinity=None):
+    """
+    ki_values_diana           : Ki del VOC diana usada per a selectivitat (s2),
+                                 promiscuïtat (s5) i com a valor principal mostrat.
+    ki_values_diana_affinity  : Ki del VOC diana usada NOMÉS per a l'afinitat (s1).
+                                 Si no es proporciona (o falta l'OBP), es fa servir
+                                 ki_values_diana com a fallback.
+    """
+
     info_by_name  = obp_info_table.set_index('Binding Protein Name')
     n_vocs_total  = len(binding_table)
- 
+
     obp_rows = []
     for obp_name in obp_name_list:
- 
+
         ki_diana = ki_values_diana.get(obp_name, np.nan)
- 
+
         if pd.isna(ki_diana):
             continue
- 
+
+        ki_diana_affinity = np.nan
+        if ki_values_diana_affinity is not None:
+            ki_diana_affinity = ki_values_diana_affinity.get(obp_name, np.nan)
+        if pd.isna(ki_diana_affinity):
+            ki_diana_affinity = ki_diana
+
         if obp_name in info_by_name.index:
             obp_row    = info_by_name.loc[obp_name]
             obp_type   = obp_row['Binding Protein Type']
@@ -432,10 +508,21 @@ def build_obp_ranking(ki_values_diana, obp_info_table, binding_table,
  
         is_preferred = (obp_type == BEST_OBP_TYPE and cys_count == BEST_CYS_NUM)
         n_vocs_bound = int(binding_table[obp_name].notna().sum())
- 
+
+        experimental_ki = None
+        if experimental_ki_values_diana is not None:
+            experimental_ki = experimental_ki_values_diana.get(obp_name, np.nan)
+
+        s1_source_label = infer_s1_source_label(
+            selected_value=ki_diana_affinity,
+            experimental_value=experimental_ki,
+            binding_source_label=binding_source_label,
+        )
+
         obp_rows.append({
             'OBP':          obp_name,
             'Ki_diana_uM':  ki_diana,
+            'Ki_diana_affinity_uM': ki_diana_affinity,
             'Type':         obp_type,
             'Cystines':     cys_count,
             'Preferred':    is_preferred,
@@ -443,6 +530,7 @@ def build_obp_ranking(ki_values_diana, obp_info_table, binding_table,
             'UniProtID':    uniprot_id,
             'Alphafold':    alphafold,
             'N_VOCs_bound': n_vocs_bound,
+            's1_source_label': s1_source_label,
         })
  
     if not obp_rows:
@@ -453,6 +541,7 @@ def build_obp_ranking(ki_values_diana, obp_info_table, binding_table,
     # ── Selectivitat: Ki mínima dels interferents per cada OBP ────────────────
     ki_per_interferent = {}
  
+    interferent_row_idx = {}
     if interferent_list:
         print(f"\n[·] Aplicant filtre de selectivitat ({len(interferent_list)} interferents)...")
         for interferent_name in interferent_list:
@@ -466,6 +555,7 @@ def build_obp_ranking(ki_values_diana, obp_info_table, binding_table,
  
             ki_series = pd.Series({col: chosen_row[col] for col in obp_name_list})
             ki_per_interferent[interferent_name] = ki_series
+            interferent_row_idx[interferent_name] = chosen_row.name
  
     # ── Per cada OBP calculem la Ki mínima dels interferents ─────────────────
     # i quins interferents NO s'han pogut mesurar (falten) per a aquest OBP.
@@ -510,10 +600,11 @@ def build_obp_ranking(ki_values_diana, obp_info_table, binding_table,
     s2_list = []
     s4_list = []
     s5_list = []
- 
+    n_competitors_s5_list = []
+
     for _, obp_row in result_table.iterrows():
         s1 = compute_s1_affinity(
-            ki_diana=obp_row['Ki_diana_uM'],
+            ki_diana=obp_row['Ki_diana_affinity_uM'],
             ki_min_matrix=ki_min_matrix,
             ki_max_matrix=ki_max_matrix
         )
@@ -533,17 +624,26 @@ def build_obp_ranking(ki_values_diana, obp_info_table, binding_table,
             ki_diana=obp_row['Ki_diana_uM'],
             ki_competitors=ki_competitors
         )
- 
+
+        # Nombre de competidors realment usats en el càlcul de s5 (mateix
+        # filtre que aplica compute_s5_promiscuity: sense NaN i Ki > 0).
+        # Cal per a c5: la confiança en s5 no pot dependre només d'un
+        # binari (has_s5_data), sinó de quanta evidència hi ha darrere.
+        valid_competitors = ki_competitors.dropna()
+        n_competitors_s5 = int((valid_competitors > 0).sum())
+
         s1_list.append(s1)
         s2_list.append(s2)
         s4_list.append(s4)
         s5_list.append(s5)
- 
- 
+        n_competitors_s5_list.append(n_competitors_s5)
+
+
     result_table['s1_affinity']    = s1_list
     result_table['s2_selectivity'] = s2_list
     result_table['s4_stability']   = s4_list
     result_table['s5_promiscuity'] = s5_list
+    result_table['N_competitors_s5'] = n_competitors_s5_list
 
     # ── Flags de disponibilitat de dades ─────────────────────────────────────
     # has_s2_data: True si es va mesurar almenys un interferent per aquest OBP
@@ -609,12 +709,13 @@ def build_obp_ranking(ki_values_diana, obp_info_table, binding_table,
         by='Score', ascending=False
     ).reset_index(drop=True)
 
+    result_table.attrs['interferent_row_idx'] = interferent_row_idx
     return result_table
  
  
 # ── TAULES 1/2/3 — selectivitat fiable / prometedors / llista de feina (Mode 1) ──
 
-def show_table1_honest(result_table, how_many):
+def show_table1_honest(result_table, how_many, binding_source_label="experimental"):
     """Taula 1 — OBPs amb TOTS els interferents mesurats: s2 fiable,
     comparació honesta amb els 4 criteris (s1+s2+s4+s5).
 
@@ -642,16 +743,29 @@ def show_table1_honest(result_table, how_many):
     print(f"  TAULA 1 — Selectivitat FIABLE (tots els interferents mesurats) — top {how_many}")
     print(f"  Comparació honesta amb els 4 criteris (pesos renormalitzats)")
     print(sep)
-    print(f"  {'#':>3}  {'OBP':<22} {'Score':>7}  {'s1':>5}  {'s2':>5}  "
-          f"{'s4':>5}  {'s5':>5}  {'Ki(μM)':>8}  {'Ki_interf':>9}  {'Tipus':<12}")
+    show_source_col = str(binding_source_label or "").strip().lower() == "predicted"
+    header = f"  {'#':>3}  {'OBP':<22} {'Score':>7}  {'s1':>5}"
+    if show_source_col:
+        header += f"  {'s1 src':>12}"
+    header += f"  {'s2':>5}  {'s4':>5}  {'s5':>5}  {'Ki_sel(μM)':>10}"
+    if show_source_col:
+        header += f"  {'Ki_af(μM)':>10}"
+    header += f"  {'Ki_interf':>9}  {'Tipus':<12}"
+    print(header)
     print(sep)
     for pos, (_, row) in enumerate(df.head(how_many).iterrows()):
         ki_i = (f"{row['Min_Ki_interferent_uM']:.2f}"
                 if not pd.isna(row['Min_Ki_interferent_uM']) else "   —  ")
-        print(f"  {pos+1:>3}. {row['OBP']:<22} {row['Score']:>7.4f}  "
-              f"{row['s1_affinity']:>5.3f}  {row['s2_selectivity']:>5.3f}  "
-              f"{row['s4_stability']:>5.3f}  {row['s5_promiscuity']:>5.3f}  "
-              f"{row['Ki_diana_uM']:>8.2f}  {ki_i:>9}  {str(row['Type']):<12}")
+        s1_src = row.get('s1_source_label', '—')
+        line = f"  {pos+1:>3}. {row['OBP']:<22} {row['Score']:>7.4f}  {row['s1_affinity']:>5.3f}"
+        if show_source_col:
+            line += f"  {str(s1_src):>12}"
+        line += f"  {row['s2_selectivity']:>5.3f}  {row['s4_stability']:>5.3f}  {row['s5_promiscuity']:>5.3f}  {row['Ki_diana_uM']:>10.2f}"
+        if show_source_col:
+            ki_af = row.get('Ki_diana_affinity_uM', np.nan)
+            line += f"  {ki_af:>10.2f}" if not pd.isna(ki_af) else f"  {'—':>10}"
+        line += f"  {ki_i:>9}  {str(row['Type']):<12}"
+        print(line)
     print(sep)
     print(f"  Total amb tots els interferents mesurats: {len(df)}")
 
@@ -719,16 +833,11 @@ def show_table3_boltz_worklist(df_table2_sorted):
 
 # ── TAULES 1/2/3 — comú als 3 modes ──────────────────────────────────────────
 
-def show_tables_1_2_3(result_table, how_many):
-    """Mostra Taula 1/2/3 igual per als 3 modes: si cap OBP té TOTS els
-    interferents mesurats, la Taula 1 ho indica i es salta a la 2 i la 3."""
-    has_incomplete_data = (~result_table['has_all_interferents']).any()
-    if has_incomplete_data:
-        show_table1_honest(result_table, how_many)
-        df_table2 = show_table2_promising(result_table, how_many)
-        show_table3_boltz_worklist(df_table2)
-    else:
-        print("\n  (Tots els OBPs tenien TOTS els interferents mesurats — selectivitat fiable per a tots.)")
+def show_tables_1_2_3(result_table, how_many, binding_source_label="experimental"):
+    """Mostra els candidats unificats i la llista de feina: Taula 1/2/3 fusionades."""
+    es_predit = str(binding_source_label).lower() == "predicted"
+    cf.show_unified_table(result_table, how_many, es_predit, MIN_CONF_FILTRE)
+    cf.show_worklist(result_table)
 
 
 # ── RESULTATS PROBABILÍSTICS (Modes 2 i 3) ───────────────────────────────────
@@ -784,17 +893,22 @@ def show_smaa_results(result_table, rank_accept, how_many, central_w, criteri_no
  
 def main():
  
-    print("OBP FINDER — iGEM URV 2025")
+    print("SCENTINEL CODE — Selecció de candidats OBP per a un VOC diana")
     print("Selecció del millor candidat OBP per a un VOC diana\n")
- 
-    for csv_path in (BINDING_FILE, INFO_FILE):
+
+    binding_file_name, binding_source = select_binding_source()
+    binding_file = resolve_data_file(binding_file_name)
+    info_file = resolve_data_file(INFO_FILE)
+
+    for csv_path in (binding_file, info_file):
         if not os.path.isfile(csv_path):
-            print(f"ERROR: No es troba el fitxer '{csv_path}'.")
-            print("Posa els CSV a la mateixa carpeta que aquest script.")
+            print(f"ERROR: No es troba el fitxer '{os.path.basename(csv_path)}'.")
+            print(f"S'ha buscat a: {os.path.dirname(csv_path) or '.'}")
             sys.exit(1)
- 
+
+    print(f"\nUsant la matriu de binding: {binding_file} ({binding_source})")
     binding_table, obp_info_table, cas_col, name_col, obp_name_list, LITERATURE_MIN, LITERATURE_MAX = load_csv_files(
-        BINDING_FILE, INFO_FILE
+        binding_file, info_file
     )
  
     # ── Cercar el VOC diana (per nom o CAS) ───────────────────────────────────
@@ -818,7 +932,49 @@ def main():
     voc_name_safe = re.sub(r'[^\w]+', '_', voc_display)[:40]
  
     ki_values_diana = pd.Series({col: chosen_voc[col] for col in obp_name_list})
- 
+    experimental_ki_values_diana = None
+    if binding_source == "predicted":
+        experimental_binding_table, _, _, _, _, _, _ = load_csv_files(
+            resolve_data_file(BINDING_FILE_EXPERIMENTAL), info_file
+        )
+        experimental_voc = validar_voc(
+            experimental_binding_table,
+            name_col,
+            cas_col,
+            chosen_voc[cas_col],
+        )
+        if experimental_voc is not None:
+            experimental_ki_values_diana = pd.Series(
+                {col: experimental_voc[col] for col in obp_name_list}
+            )
+
+    # ── Amb informació predita: l'afinitat (s1) es calcula amb un fitxer apart ──
+    # (BINDING_FILE_PREDICTED_AFFINITY), mentre que binding_table (BINDING_FILE_PREDICTED)
+    # segueix servint per a la selectivitat (s2) i la resta de l'anàlisi.
+    ki_values_diana_affinity = None
+    if binding_source == "predicted":
+        affinity_file = resolve_data_file(BINDING_FILE_PREDICTED_AFFINITY)
+        if not os.path.isfile(affinity_file):
+            print(f"ERROR: No es troba el fitxer d'afinitat predita '{os.path.basename(affinity_file)}'.")
+            print(f"S'ha buscat a: {os.path.dirname(affinity_file) or '.'}")
+            sys.exit(1)
+
+        print(f"Usant la matriu d'afinitat predita: {affinity_file}")
+        affinity_binding_table, _, _, _, _, _, _ = load_csv_files(affinity_file, info_file)
+        affinity_voc = validar_voc(
+            affinity_binding_table,
+            name_col,
+            cas_col,
+            chosen_voc[cas_col],
+        )
+        if affinity_voc is not None:
+            ki_values_diana_affinity = pd.Series(
+                {col: affinity_voc[col] for col in obp_name_list}
+            )
+        else:
+            print(f"  ⚠ VOC no trobat a {BINDING_FILE_PREDICTED_AFFINITY}; "
+                  f"s'usaran els valors de {BINDING_FILE_PREDICTED} també per a l'afinitat.")
+
     # ── Fitxer d'interferents ─────────────────────────────────────────────────
     
     print("\nEl fitxer d'interferents pot contenir noms o números CAS, un per línia.")
@@ -868,11 +1024,26 @@ def main():
         ki_min_matrix=LITERATURE_MIN,
         ki_max_matrix=LITERATURE_MAX,
         tau=tau,
+        experimental_ki_values_diana=experimental_ki_values_diana,
+        binding_source_label=binding_source,
+        ki_values_diana_affinity=ki_values_diana_affinity,
     )
 
     if result_table.empty:
         print("  Cap OBP té dades per a aquest VOC.")
         sys.exit(0)
+
+    diag_c1 = cf.load_diag_c1(resolve_data_file(DIAG_FILE))
+    if diag_c1 is None and binding_source == "predicted":
+        print(f"  ⚠ No trobo {DIAG_FILE}: la c1 de les cel·les imputades serà {cf.C1_FALLBACK}")
+
+    result_table = cf.compute_confidences(
+        result_table, weights,
+        diana_row_idx=chosen_voc.name,
+        interferent_row_idx=result_table.attrs.get('interferent_row_idx', {}),
+        diag_c1=diag_c1,
+        es_predit=(binding_source == "predicted"),
+    )
 
     # ── El cas "sense interferents" ja s'ha bloquejat en demanar els pesos.
     # Aquí només falta el cas en què SÍ hi ha interferents però cap OBP en té
@@ -880,28 +1051,13 @@ def main():
     has_table1_data = result_table['has_all_interferents'].any() if has_interferents else False
 
     if has_interferents and not has_table1_data:
-        print(f"\n  ✗ Cap OBP té TOTS els interferents mesurats: la selectivitat (s2)")
-        print(f"    no es pot avaluar de manera fiable per a CAP candidat amb els pesos actuals.")
-        print(f"    Això afecta els 3 mètodes (pesos deterministes, Dirichlet i SMAA).")
-        print(f"    Torna a introduir els pesos sense selectivitat (es bloqueja a 0).")
-        weights = ask_user_for_weights(lock_selectivity_zero=True)
-        print("\nRecalculant ranking amb els nous pesos...")
-        result_table = build_obp_ranking(
-            ki_values_diana=ki_values_diana,
-            obp_info_table=obp_info_table,
-            binding_table=binding_table,
-            cas_col=cas_col,
-            name_col=name_col,
-            interferent_list=interferent_list,
-            obp_name_list=obp_name_list,
-            weights=weights,
-            ki_min_matrix=LITERATURE_MIN,
-            ki_max_matrix=LITERATURE_MAX,
-            tau=tau,
+        result_table = cf.compute_confidences(
+            result_table, weights,
+            diana_row_idx=chosen_voc.name,
+            interferent_row_idx=result_table.attrs.get('interferent_row_idx', {}),
+            diag_c1=diag_c1,
+            es_predit=(binding_source == "predicted"),
         )
-        if result_table.empty:
-            print("  Cap OBP té dades per a aquest VOC.")
-            sys.exit(0)
 
     # ═══════════════════════════════════════════════════════════
     # SELECCIÓ DE MODE
@@ -911,7 +1067,7 @@ def main():
     print("  MODE D'ANÀLISI")
     print(sep)
     print("  [1] Pesos deterministes    — resultat únic, ràpid, transparent")
-    print("  [2] Dirichlet (c%)         — probabilitat robusta al voltant dels teus pesos")
+    print("  [2] Perturbació (c%)       — probabilitat robusta al voltant dels teus pesos")
     print("  [3] SMAA pur               — exploració total de l'espai de pesos")
     mode_raw = input("\n  Tria mode [1/2/3, per defecte 1]: ").strip()
     mode_num = mode_raw if mode_raw in ("1", "2", "3") else "1"
@@ -944,9 +1100,9 @@ def main():
 
     # ── Mode 1: Pesos deterministes ─────────────────────────────────────────
     if mode_num == "1":
-        show_tables_1_2_3(result_table, how_many)
+        show_tables_1_2_3(result_table, how_many, binding_source_label=binding_source)
 
-    # ── Mode 2: Dirichlet al voltant dels pesos ──────────────────────────────
+    # ── Mode 2: Perturbació al voltant dels pesos ────────────────────────────
     elif mode_num == "2":
         print(f"\n  Dispersió c% — fins on poden moure's els pesos (com a % del salt al criteri adjacent):")
         print(f"    10 = molt concentrat (pesos quasi fixos, ±10% del salt mínim entre criteris)")
@@ -964,15 +1120,15 @@ def main():
         n_raw = input("  Nombre d'iteracions [per defecte 200000]: ").strip()
         n_iter = int(n_raw) if n_raw.isdigit() and int(n_raw) > 0 else 200_000
 
-        print(f"\nExecutant SMAA Dirichlet ({n_iter:,} iteracions, c={c_val:.0f}%)...")
+        print(f"\nExecutant Perturbació de pesos ({n_iter:,} iteracions, c={c_val:.0f}%)...")
         rank_accept, _, _ = smaa_complet(
             subscores=subscores, te_dada=te_dada,
             n_iter=n_iter, pesos_base=pesos_base_list, c=c_val,
-            mode="dirichlet", seed=42,
+            mode="perturbacio", seed=42,
         )
         show_smaa_results(result_table, rank_accept, how_many, central_w=None,
                            criteri_noms=criteri_noms)
-        show_tables_1_2_3(result_table, how_many)
+        show_tables_1_2_3(result_table, how_many, binding_source_label=binding_source)
 
     # ── Mode 3: SMAA totalment aleatori ──────────────────────────────────────
     elif mode_num == "3":
@@ -986,7 +1142,7 @@ def main():
         )
         show_smaa_results(result_table, rank_accept, how_many, central_w=central_w,
                            criteri_noms=criteri_noms)
-        show_tables_1_2_3(result_table, how_many)
+        show_tables_1_2_3(result_table, how_many, binding_source_label=binding_source)
 
 
 if __name__ == '__main__':

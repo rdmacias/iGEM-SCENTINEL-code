@@ -22,6 +22,8 @@ from main import (
     compute_s5_promiscuity,
     compute_final_score,
     build_obp_ranking,
+    select_binding_source,
+    infer_s1_source_label,
 )
  
  
@@ -91,7 +93,28 @@ class TestConvertKiToFloat:
  
  
 # ──────────────────────────────────────────────
-# 2. read_interferent_file
+# 2. select_binding_source
+# ──────────────────────────────────────────────
+ 
+class TestSelectBindingSource:
+
+    def test_selecciona_dades_experimentals(self, monkeypatch):
+        answers = iter(["1"])
+        monkeypatch.setattr("builtins.input", lambda prompt="": next(answers))
+        binding_file, source_label = select_binding_source()
+        assert binding_file == "Compound_OBP_binding.csv"
+        assert source_label == "experimental"
+
+    def test_selecciona_dades_predites(self, monkeypatch):
+        answers = iter(["2"])
+        monkeypatch.setattr("builtins.input", lambda prompt="": next(answers))
+        binding_file, source_label = select_binding_source()
+        assert binding_file == "Compound_OBP_binding_imputed_lower.csv"
+        assert source_label == "predicted"
+
+
+# ──────────────────────────────────────────────
+# 3. read_interferent_file
 # ──────────────────────────────────────────────
  
 class TestReadInterferentFile:
@@ -131,6 +154,30 @@ class TestReadInterferentFile:
 # 3. compute_s1_affinity
 # ──────────────────────────────────────────────
  
+class TestInferS1SourceLabel:
+
+    def test_predicted_value_matching_experimental_is_experimental(self):
+        assert infer_s1_source_label(
+            selected_value=2.0,
+            experimental_value=2.0,
+            binding_source_label="predicted",
+        ) == "experimental"
+
+    def test_predicted_value_without_experimental_is_new_tanimoto(self):
+        assert infer_s1_source_label(
+            selected_value=2.0,
+            experimental_value=np.nan,
+            binding_source_label="predicted",
+        ) == "new (tanimoto)"
+
+    def test_experimental_source_is_experimental(self):
+        assert infer_s1_source_label(
+            selected_value=2.0,
+            experimental_value=np.nan,
+            binding_source_label="experimental",
+        ) == "experimental"
+
+
 class TestComputeS1Affinity:
  
     def test_ki_igual_al_minim_retorna_1(self):

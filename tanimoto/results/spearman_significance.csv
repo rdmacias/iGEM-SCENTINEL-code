@@ -1,0 +1,2 @@
+rho_real,pval_parametric,pval_bootstrap,rho_mean_random,rho_std_random,ci_95_lower,ci_95_upper,n_predictions,n_permutations
+0.76,0.0,0.0,0.0,0.01,-0.03,0.03,5708,5000

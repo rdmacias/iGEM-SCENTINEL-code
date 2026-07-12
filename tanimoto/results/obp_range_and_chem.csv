@@ -1,0 +1,438 @@
+OBP,n_measured,n_used,Ki_min_uM,Ki_max_uM,std_pki,range_pki,has_fort,has_mitja,has_fluix,range_class,mean_tanimoto,n_pairs_chem,chem_class,combined_type
+CpalOBP2,83,83,0.37,22.0,0.261,1.774,True,True,False,tot fort,0.151,3403,químicament divers,SOSPITÓS (uneix fort coses diferents)
+CpalOBP3,83,83,0.28,22.0,0.328,1.895,True,True,False,tot fort,0.151,3403,químicament divers,SOSPITÓS (uneix fort coses diferents)
+CpalOBP6,83,83,0.63,22.0,0.32,1.543,True,True,False,tot fort,0.151,3403,químicament divers,SOSPITÓS (uneix fort coses diferents)
+CninOBP1,77,77,1.85,22.0,0.22,1.075,True,True,False,tot fort,0.156,2926,químicament divers,SOSPITÓS (uneix fort coses diferents)
+CninOBP9,77,77,4.61,22.0,0.077,0.679,True,True,False,tot fort,0.156,2926,químicament divers,SOSPITÓS (uneix fort coses diferents)
+AlinOBP11,45,45,2.63,33.0,0.239,1.099,True,True,False,tot fort,0.148,990,químicament divers,SOSPITÓS (uneix fort coses diferents)
+CmedCSP3,34,34,2.3,22.0,0.284,0.981,True,True,False,tot fort,0.163,561,químicament divers,SOSPITÓS (uneix fort coses diferents)
+CmedCSP1,33,33,3.24,22.0,0.277,0.832,True,True,False,tot fort,0.161,528,químicament divers,SOSPITÓS (uneix fort coses diferents)
+CmedCSP2,33,33,2.53,22.0,0.256,0.939,True,True,False,tot fort,0.161,528,químicament divers,SOSPITÓS (uneix fort coses diferents)
+AcerOBP11,22,22,1.35,10.74,0.214,0.901,True,True,False,tot fort,0.137,231,químicament divers,SOSPITÓS (uneix fort coses diferents)
+SzeaOBP1,22,22,2.75,30.27,0.266,1.042,True,True,False,tot fort,0.199,231,químicament divers,SOSPITÓS (uneix fort coses diferents)
+AgamOBP4,20,20,1.4,15.3,0.332,1.039,True,True,False,tot fort,0.18,190,químicament divers,SOSPITÓS (uneix fort coses diferents)
+McinOBP4,20,20,4.12,36.57,0.211,0.948,True,True,False,tot fort,0.155,190,químicament divers,SOSPITÓS (uneix fort coses diferents)
+CcapOBP83a-2,19,19,0.79,6.77,0.244,0.933,True,True,False,tot fort,0.144,171,químicament divers,SOSPITÓS (uneix fort coses diferents)
+CpinGOBP1,19,19,3.05,11.0,0.229,0.557,True,True,False,tot fort,0.183,171,químicament divers,SOSPITÓS (uneix fort coses diferents)
+CpinPBP1,19,19,1.43,11.0,0.219,0.886,True,True,False,tot fort,0.183,171,químicament divers,SOSPITÓS (uneix fort coses diferents)
+CpinPBP3,19,19,2.67,11.0,0.19,0.615,True,True,False,tot fort,0.183,171,químicament divers,SOSPITÓS (uneix fort coses diferents)
+CsinGOBP1,19,19,4.83,33.0,0.226,0.835,True,True,False,tot fort,0.115,171,químicament divers,SOSPITÓS (uneix fort coses diferents)
+DcitOBP3,17,17,3.51,9.05,0.117,0.411,True,True,False,tot fort,0.107,136,químicament divers,SOSPITÓS (uneix fort coses diferents)
+MperOBP3,17,17,2.5,9.8,0.152,0.593,True,True,False,tot fort,0.124,136,químicament divers,SOSPITÓS (uneix fort coses diferents)
+MperOBP9,17,17,2.0,29.4,0.296,1.167,True,True,False,tot fort,0.124,136,químicament divers,SOSPITÓS (uneix fort coses diferents)
+OcorOBP1,16,16,1.8,12.0,0.286,0.824,True,True,False,tot fort,0.147,120,químicament divers,SOSPITÓS (uneix fort coses diferents)
+SaveOBP7,15,15,1.3,20.5,0.289,1.198,True,True,False,tot fort,0.166,105,químicament divers,SOSPITÓS (uneix fort coses diferents)
+OcorOBP3,14,14,3.3,10.0,0.137,0.481,True,True,False,tot fort,0.156,91,químicament divers,SOSPITÓS (uneix fort coses diferents)
+AlucOBP33,13,13,4.3,24.53,0.239,0.756,True,True,False,tot fort,0.122,78,químicament divers,SOSPITÓS (uneix fort coses diferents)
+DcitCSP12,13,13,2.54,27.09,0.264,1.028,True,True,False,tot fort,0.101,78,químicament divers,SOSPITÓS (uneix fort coses diferents)
+AgamSAP1,12,12,4.96,33.0,0.287,0.823,True,True,False,tot fort,0.176,66,químicament divers,SOSPITÓS (uneix fort coses diferents)
+BminOBP9 P99A,11,11,1.48,2.07,0.051,0.146,True,False,False,tot fort,0.148,55,químicament divers,SOSPITÓS (uneix fort coses diferents)
+MmedOBP4,11,11,4.28,28.96,0.303,0.83,True,True,False,tot fort,0.128,55,químicament divers,SOSPITÓS (uneix fort coses diferents)
+BminOBP9 E94V,10,10,1.06,2.19,0.092,0.315,True,False,False,tot fort,0.149,45,químicament divers,SOSPITÓS (uneix fort coses diferents)
+BminOBP9 H29Y,10,10,1.86,3.42,0.085,0.265,True,False,False,tot fort,0.14,45,químicament divers,SOSPITÓS (uneix fort coses diferents)
+HparOBP1,10,10,4.1,35.2,0.349,0.934,True,True,False,tot fort,0.113,45,químicament divers,SOSPITÓS (uneix fort coses diferents)
+BminOBP9,9,9,1.61,3.92,0.127,0.386,True,False,False,tot fort,0.133,36,químicament divers,SOSPITÓS (uneix fort coses diferents)
+LdisPBP1,7,7,1.87,3.81,0.107,0.309,True,False,False,tot fort,0.125,21,químicament divers,SOSPITÓS (uneix fort coses diferents)
+LdisPBP2,7,7,1.85,5.32,0.157,0.459,True,True,False,tot fort,0.125,21,químicament divers,SOSPITÓS (uneix fort coses diferents)
+CforOBP3,6,6,1.35,8.5,0.343,0.799,True,True,False,tot fort,0.137,15,químicament divers,SOSPITÓS (uneix fort coses diferents)
+McinNPC2,6,6,0.26,1.82,0.33,0.845,True,False,False,tot fort,0.068,15,químicament divers,SOSPITÓS (uneix fort coses diferents)
+MmedOBP2,6,6,3.4,21.15,0.314,0.794,True,True,False,tot fort,0.147,15,químicament divers,SOSPITÓS (uneix fort coses diferents)
+SexiOBP1,5,5,2.76,14.25,0.287,0.713,True,True,False,tot fort,0.082,10,químicament divers,SOSPITÓS (uneix fort coses diferents)
+AaegOBP22,4,4,1.76,3.97,0.161,0.353,True,False,False,tot fort,0.177,6,químicament divers,SOSPITÓS (uneix fort coses diferents)
+AlepPBP2,4,4,3.3,5.25,0.093,0.202,True,True,False,tot fort,0.135,3,químicament divers,SOSPITÓS (uneix fort coses diferents)
+AlepPBP3,4,4,3.27,22.0,0.343,0.828,True,True,False,tot fort,0.135,3,químicament divers,SOSPITÓS (uneix fort coses diferents)
+CvesOBP6,4,4,2.9,5.0,0.106,0.237,True,True,False,tot fort,0.089,6,químicament divers,SOSPITÓS (uneix fort coses diferents)
+BminOBP9 L36F,3,3,3.63,4.12,0.029,0.055,True,False,False,tot fort,0.145,3,químicament divers,SOSPITÓS (uneix fort coses diferents)
+CquiOBP2,3,3,1.4,5.3,0.303,0.578,True,True,False,tot fort,0.094,3,químicament divers,SOSPITÓS (uneix fort coses diferents)
+OcorOBP2,3,3,3.7,14.7,0.302,0.599,True,True,False,tot fort,0.188,3,químicament divers,SOSPITÓS (uneix fort coses diferents)
+AlepGOBP2 F118A,2,2,,,,,False,False,False,dades insuficients,,0,dades insuficients,dades insuficients
+AlepGOBP2 F12A,2,2,,,,,False,False,False,dades insuficients,,0,dades insuficients,dades insuficients
+AlepGOBP2 I52A,2,2,,,,,False,False,False,dades insuficients,,0,dades insuficients,dades insuficients
+AlepGOBP2 I94A,2,2,,,,,False,False,False,dades insuficients,,0,dades insuficients,dades insuficients
+AlucOBP22,2,2,,,,,False,False,False,dades insuficients,,0,dades insuficients,dades insuficients
+AlucOBP22 I60A,2,2,,,,,False,False,False,dades insuficients,,0,dades insuficients,dades insuficients
+AlucOBP22 L25A,2,2,,,,,False,False,False,dades insuficients,,0,dades insuficients,dades insuficients
+AlucOBP22 K90A,2,2,,,,,False,False,False,dades insuficients,,0,dades insuficients,dades insuficients
+AlucOBP22 M6A,2,2,,,,,False,False,False,dades insuficients,,0,dades insuficients,dades insuficients
+AlucOBP22 M65A,2,2,,,,,False,False,False,dades insuficients,,0,dades insuficients,dades insuficients
+AlucOBP22 V64A,2,2,,,,,False,False,False,dades insuficients,,0,dades insuficients,dades insuficients
+AmelCSP1,2,2,,,,,False,False,False,dades insuficients,,0,dades insuficients,dades insuficients
+AmelCSP2,2,2,,,,,False,False,False,dades insuficients,,0,dades insuficients,dades insuficients
+AmelCSP3,2,2,,,,,False,False,False,dades insuficients,,0,dades insuficients,dades insuficients
+AmelCSP4,2,2,,,,,False,False,False,dades insuficients,,0,dades insuficients,dades insuficients
+AmelCSP5,2,2,,,,,False,False,False,dades insuficients,,0,dades insuficients,dades insuficients
+AmelCSP6,2,2,,,,,False,False,False,dades insuficients,,0,dades insuficients,dades insuficients
+AmelOBP1,2,2,,,,,False,False,False,dades insuficients,,0,dades insuficients,dades insuficients
+AmelOBP2,2,2,,,,,False,False,False,dades insuficients,,0,dades insuficients,dades insuficients
+AmelOBP3,2,2,,,,,False,False,False,dades insuficients,,0,dades insuficients,dades insuficients
+AmelOBP4,2,2,,,,,False,False,False,dades insuficients,,0,dades insuficients,dades insuficients
+AmelOBP5,2,2,,,,,False,False,False,dades insuficients,,0,dades insuficients,dades insuficients
+AmelOBP6,2,2,,,,,False,False,False,dades insuficients,,0,dades insuficients,dades insuficients
+AmelOBP8,2,2,,,,,False,False,False,dades insuficients,,0,dades insuficients,dades insuficients
+AmelOBP9,2,2,,,,,False,False,False,dades insuficients,,0,dades insuficients,dades insuficients
+AmelOBP10,2,2,,,,,False,False,False,dades insuficients,,0,dades insuficients,dades insuficients
+AmelOBP11,2,2,,,,,False,False,False,dades insuficients,,0,dades insuficients,dades insuficients
+AmelOBP13,2,2,,,,,False,False,False,dades insuficients,,0,dades insuficients,dades insuficients
+AmelOBP15 ITB,2,2,,,,,False,False,False,dades insuficients,,0,dades insuficients,dades insuficients
+AmelOBP15 RJB,2,2,,,,,False,False,False,dades insuficients,,0,dades insuficients,dades insuficients
+AmelOBP17,2,2,,,,,False,False,False,dades insuficients,,0,dades insuficients,dades insuficients
+AmelOBP19,2,2,,,,,False,False,False,dades insuficients,,0,dades insuficients,dades insuficients
+AmelOBP21,2,2,,,,,False,False,False,dades insuficients,,0,dades insuficients,dades insuficients
+BdorOBP99a,2,2,,,,,False,False,False,dades insuficients,,0,dades insuficients,dades insuficients
+BmorCSP1,2,2,,,,,False,False,False,dades insuficients,,0,dades insuficients,dades insuficients
+BtabOBP1,2,2,,,,,False,False,False,dades insuficients,,0,dades insuficients,dades insuficients
+BtabOBP4,2,2,,,,,False,False,False,dades insuficients,,0,dades insuficients,dades insuficients
+CbuqPBP1 F69A,2,2,,,,,False,False,False,dades insuficients,,0,dades insuficients,dades insuficients
+CinfPBP1,2,2,,,,,False,False,False,dades insuficients,,0,dades insuficients,dades insuficients
+CinfPBP2,2,2,,,,,False,False,False,dades insuficients,,0,dades insuficients,dades insuficients
+CinfPBP3,2,2,,,,,False,False,False,dades insuficients,,0,dades insuficients,dades insuficients
+CvesOBP1,2,2,,,,,False,False,False,dades insuficients,,0,dades insuficients,dades insuficients
+CvesOBP3,2,2,,,,,False,False,False,dades insuficients,,0,dades insuficients,dades insuficients
+CvesOBP4,2,2,,,,,False,False,False,dades insuficients,,0,dades insuficients,dades insuficients
+OcorOBP4,2,2,,,,,False,False,False,dades insuficients,,0,dades insuficients,dades insuficients
+PxylPBP3,2,2,,,,,False,False,False,dades insuficients,,0,dades insuficients,dades insuficients
+PxylPBP3 F13A,2,2,,,,,False,False,False,dades insuficients,,0,dades insuficients,dades insuficients
+PxylPBP3 F34A,2,2,,,,,False,False,False,dades insuficients,,0,dades insuficients,dades insuficients
+PxylPBP3 Y37A,2,2,,,,,False,False,False,dades insuficients,,0,dades insuficients,dades insuficients
+PxylPBP3 W38A,2,2,,,,,False,False,False,dades insuficients,,0,dades insuficients,dades insuficients
+PxylPBP3 R111A,2,2,,,,,False,False,False,dades insuficients,,0,dades insuficients,dades insuficients
+PxylPBP3 F119A,2,2,,,,,False,False,False,dades insuficients,,0,dades insuficients,dades insuficients
+ScerGOBP1,2,2,,,,,False,False,False,dades insuficients,,0,dades insuficients,dades insuficients
+ScerGOBP2,2,2,,,,,False,False,False,dades insuficients,,0,dades insuficients,dades insuficients
+ScerPBP,2,2,,,,,False,False,False,dades insuficients,,0,dades insuficients,dades insuficients
+TintPBP1,2,2,,,,,False,False,False,dades insuficients,,0,dades insuficients,dades insuficients
+TintPBP2,2,2,,,,,False,False,False,dades insuficients,,0,dades insuficients,dades insuficients
+TintPBP3,2,2,,,,,False,False,False,dades insuficients,,0,dades insuficients,dades insuficients
+AlinOBP5 K74A,1,1,,,,,False,False,False,dades insuficients,,0,dades insuficients,dades insuficients
+AlinOBP5 M75A,1,1,,,,,False,False,False,dades insuficients,,0,dades insuficients,dades insuficients
+AlinOBP5 P121A,1,1,,,,,False,False,False,dades insuficients,,0,dades insuficients,dades insuficients
+BdorCSP2,1,1,,,,,False,False,False,dades insuficients,,0,dades insuficients,dades insuficients
+BminOBP9 S24P,1,1,,,,,False,False,False,dades insuficients,,0,dades insuficients,dades insuficients
+CvesOBP2,1,1,,,,,False,False,False,dades insuficients,,0,dades insuficients,dades insuficients
+DhouPBP1,1,1,,,,,False,False,False,dades insuficients,,0,dades insuficients,dades insuficients
+MmedOBP5,1,1,,,,,False,False,False,dades insuficients,,0,dades insuficients,dades insuficients
+TjapOBP1,1,1,,,,,False,False,False,dades insuficients,,0,dades insuficients,dades insuficients
+TjapOBP2,1,1,,,,,False,False,False,dades insuficients,,0,dades insuficients,dades insuficients
+TjapOBP3,1,1,,,,,False,False,False,dades insuficients,,0,dades insuficients,dades insuficients
+AipsPBP2,15,15,0.21,33.0,0.78,2.196,True,True,False,rang ampli,0.473,105,família química,"discriminador fi (mateixa família, rang complet)"
+AgamOBP1,20,20,0.06,20.2,0.818,2.527,True,True,False,rang ampli,0.114,153,químicament divers,"fitxatge lliure (accepta tot, discrimina per Ki)"
+AmelOBP18,5,5,0.13,55.0,0.984,2.626,True,True,True,rang ampli (fort + mitjà + fluix),0.132,10,químicament divers,"fitxatge lliure (accepta tot, discrimina per Ki)"
+LstrOBP2,80,80,18.95,55.0,0.091,0.463,False,True,True,tot fluix,0.157,3160,químicament divers,mal sensor (cap unió forta)
+NlugOBP8,80,80,16.13,55.0,0.078,0.533,False,True,True,tot fluix,0.157,3160,químicament divers,mal sensor (cap unió forta)
+AlinCSP1,60,60,5.42,55.0,0.277,1.006,False,True,True,tot fluix,0.181,1770,químicament divers,mal sensor (cap unió forta)
+AlinCSP2,60,60,11.07,55.0,0.211,0.696,False,True,True,tot fluix,0.181,1770,químicament divers,mal sensor (cap unió forta)
+AlinCSP3,60,60,8.94,55.0,0.238,0.789,False,True,True,tot fluix,0.181,1770,químicament divers,mal sensor (cap unió forta)
+BtabCSP1,53,53,5.78,110.0,0.252,1.279,False,True,True,tot fluix,0.16,1378,químicament divers,mal sensor (cap unió forta)
+BtabCSP2,53,53,10.28,110.0,0.141,1.029,False,True,True,tot fluix,0.16,1378,químicament divers,mal sensor (cap unió forta)
+BtabCSP3,53,53,5.82,110.0,0.183,1.276,False,True,True,tot fluix,0.16,1378,químicament divers,mal sensor (cap unió forta)
+MmedOBP10,45,45,7.14,55.0,0.274,0.887,False,True,True,tot fluix,0.238,990,química mixta,mal sensor (cap unió forta)
+NlugOBP1,41,41,10.3,55.0,0.212,0.728,False,True,True,tot fluix,0.152,820,químicament divers,mal sensor (cap unió forta)
+NlugOBP2,41,41,17.0,55.0,0.165,0.51,False,True,True,tot fluix,0.152,820,químicament divers,mal sensor (cap unió forta)
+AlinOBP13,40,40,12.77,55.0,0.241,0.634,False,True,True,tot fluix,0.17,780,químicament divers,mal sensor (cap unió forta)
+AimelOBP3 E120A,39,39,9.5,55.0,0.208,0.763,False,True,True,tot fluix,0.27,741,química mixta,mal sensor (cap unió forta)
+SlitOBP11,38,38,13.53,55.0,0.164,0.609,False,True,True,tot fluix,0.143,703,químicament divers,mal sensor (cap unió forta)
+CmedOBP3,33,33,9.2,55.0,0.172,0.777,False,True,True,tot fluix,0.166,528,químicament divers,mal sensor (cap unió forta)
+SaveOBP9,30,30,7.07,96.51,0.3,1.135,False,True,True,tot fluix,0.126,435,químicament divers,mal sensor (cap unió forta)
+HparOBP20,29,29,13.84,55.0,0.202,0.599,False,True,True,tot fluix,0.157,406,químicament divers,mal sensor (cap unió forta)
+HparOBP49,29,29,39.65,55.0,0.033,0.142,False,True,True,tot fluix,0.157,406,químicament divers,mal sensor (cap unió forta)
+AbamOBP28,28,28,5.89,55.0,0.248,0.97,False,True,True,tot fluix,0.113,378,químicament divers,mal sensor (cap unió forta)
+HarmOBP17,25,25,12.9,55.0,0.128,0.63,False,True,True,tot fluix,0.177,300,químicament divers,mal sensor (cap unió forta)
+HarmOBP18,25,25,12.3,55.0,0.148,0.65,False,True,True,tot fluix,0.177,300,químicament divers,mal sensor (cap unió forta)
+NlugCSP3,25,25,5.99,45.31,0.255,0.879,False,True,True,tot fluix,0.15,300,químicament divers,mal sensor (cap unió forta)
+NlugCSP8,25,25,10.01,44.82,0.157,0.651,False,True,True,tot fluix,0.146,300,químicament divers,mal sensor (cap unió forta)
+GmolOBP15,24,24,5.52,46.82,0.257,0.928,False,True,True,tot fluix,0.21,276,química mixta,mal sensor (cap unió forta)
+AlinOBP10,20,20,13.69,55.0,0.22,0.604,False,True,True,tot fluix,0.153,190,químicament divers,mal sensor (cap unió forta)
+HoblOBP3,20,20,26.8,55.0,0.07,0.312,False,True,True,tot fluix,0.29,190,química mixta,mal sensor (cap unió forta)
+HoblOBP4,20,20,8.1,55.0,0.297,0.832,False,True,True,tot fluix,0.29,190,química mixta,mal sensor (cap unió forta)
+AgosOBP2,18,18,19.7,55.0,0.11,0.446,False,True,True,tot fluix,0.168,153,químicament divers,mal sensor (cap unió forta)
+AgosOBP3,18,18,15.2,55.0,0.172,0.559,False,True,True,tot fluix,0.168,153,químicament divers,mal sensor (cap unió forta)
+AgosOBP4,18,18,11.6,55.0,0.199,0.676,False,True,True,tot fluix,0.168,153,químicament divers,mal sensor (cap unió forta)
+AgosOBP6,18,18,14.7,55.0,0.153,0.573,False,True,True,tot fluix,0.168,153,químicament divers,mal sensor (cap unió forta)
+AgosOBP7,18,18,15.6,55.0,0.151,0.547,False,True,True,tot fluix,0.168,153,químicament divers,mal sensor (cap unió forta)
+AgosOBP8,18,18,13.4,55.0,0.223,0.613,False,True,True,tot fluix,0.168,153,químicament divers,mal sensor (cap unió forta)
+FoccCSP,18,18,10.5,116.29,0.286,1.044,False,True,True,tot fluix,0.136,136,químicament divers,mal sensor (cap unió forta)
+GmolOBP3,18,18,49.36,155.17,0.119,0.497,False,False,True,tot fluix,0.175,153,químicament divers,mal sensor (cap unió forta)
+DcitOBP6,17,17,5.28,44.0,0.299,0.921,False,True,True,tot fluix,0.107,136,químicament divers,mal sensor (cap unió forta)
+MaltOBP5,17,17,7.75,55.0,0.258,0.851,False,True,True,tot fluix,0.19,136,químicament divers,mal sensor (cap unió forta)
+MaltOBP9,17,17,7.77,43.34,0.188,0.746,False,True,True,tot fluix,0.155,136,químicament divers,mal sensor (cap unió forta)
+MaltOBP10,17,17,11.62,42.53,0.138,0.563,False,True,True,tot fluix,0.155,136,químicament divers,mal sensor (cap unió forta)
+MperOBP2,17,17,55.0,55.0,0.0,0.0,False,False,True,tot fluix,0.124,136,químicament divers,mal sensor (cap unió forta)
+MperOBP4,17,17,13.2,55.0,0.222,0.62,False,True,True,tot fluix,0.124,136,químicament divers,mal sensor (cap unió forta)
+MperOBP5,17,17,24.4,55.0,0.092,0.353,False,True,True,tot fluix,0.124,136,químicament divers,mal sensor (cap unió forta)
+MperOBP6,17,17,34.5,55.0,0.062,0.203,False,True,True,tot fluix,0.124,136,químicament divers,mal sensor (cap unió forta)
+MperOBP8,17,17,55.0,55.0,0.0,0.0,False,False,True,tot fluix,0.124,136,químicament divers,mal sensor (cap unió forta)
+MvitPBP1,17,17,17.18,40.4,0.086,0.371,False,True,True,tot fluix,0.197,136,químicament divers,mal sensor (cap unió forta)
+HeleOBP1,16,16,6.9,54.4,0.245,0.897,False,True,True,tot fluix,0.143,120,químicament divers,mal sensor (cap unió forta)
+OasiCSP4,16,16,36.15,55.0,0.067,0.182,False,True,True,tot fluix,0.22,120,química mixta,mal sensor (cap unió forta)
+OasiCSP11,16,16,9.84,55.0,0.192,0.747,False,True,True,tot fluix,0.22,120,química mixta,mal sensor (cap unió forta)
+OasiCSP12,16,16,12.25,55.0,0.26,0.652,False,True,True,tot fluix,0.22,120,química mixta,mal sensor (cap unió forta)
+AlinOBP5,15,15,7.0,44.0,0.238,0.798,False,True,True,tot fluix,0.213,105,química mixta,mal sensor (cap unió forta)
+BhorOBP2,15,15,8.07,55.0,0.229,0.833,False,True,True,tot fluix,0.12,105,químicament divers,mal sensor (cap unió forta)
+PxylOBP24,14,14,13.97,75.56,0.187,0.733,False,True,True,tot fluix,0.147,91,químicament divers,mal sensor (cap unió forta)
+DcitOBP8,13,13,9.32,44.0,0.194,0.674,False,True,True,tot fluix,0.101,78,químicament divers,mal sensor (cap unió forta)
+DcitOBP9,13,13,5.24,44.0,0.297,0.924,False,True,True,tot fluix,0.101,78,químicament divers,mal sensor (cap unió forta)
+DcitCSP8,13,13,44.0,44.0,0.0,0.0,False,False,True,tot fluix,0.101,78,químicament divers,mal sensor (cap unió forta)
+DcitCSP10,13,13,44.0,44.0,0.0,0.0,False,False,True,tot fluix,0.101,78,químicament divers,mal sensor (cap unió forta)
+DhelOBP21 T119N,13,13,17.53,166.94,0.313,0.979,False,True,True,tot fluix,0.143,78,químicament divers,mal sensor (cap unió forta)
+SmosOBP21,13,13,14.32,51.57,0.172,0.556,False,True,True,tot fluix,0.275,78,química mixta,mal sensor (cap unió forta)
+DcitOBP1,11,11,40.32,110.0,0.161,0.436,False,False,True,tot fluix,0.16,55,químicament divers,mal sensor (cap unió forta)
+GdauOBP20,11,11,22.91,50.73,0.117,0.345,False,True,True,tot fluix,0.076,55,químicament divers,mal sensor (cap unió forta)
+MmedOBP6,11,11,5.79,69.87,0.299,1.082,False,True,True,tot fluix,0.118,55,químicament divers,mal sensor (cap unió forta)
+AcerOBP10,8,8,10.2,50.58,0.271,0.695,False,True,True,tot fluix,0.143,28,químicament divers,mal sensor (cap unió forta)
+AlinOBP3,7,7,56.68,262.97,0.273,0.666,False,False,True,tot fluix,0.229,21,química mixta,mal sensor (cap unió forta)
+DmelOBP19b,7,7,390.0,710.0,0.09,0.26,False,False,True,tot fluix,0.443,21,família química,mal sensor (cap unió forta)
+SzeaOBP28,7,7,20.23,48.7,0.131,0.382,False,True,True,tot fluix,0.137,21,químicament divers,mal sensor (cap unió forta)
+AlucOBP7,6,6,23.14,55.13,0.13,0.377,False,True,True,tot fluix,0.285,15,química mixta,mal sensor (cap unió forta)
+LstiGOBP1 T15A,6,6,20.45,44.0,0.165,0.333,False,True,True,tot fluix,0.189,15,químicament divers,mal sensor (cap unió forta)
+LstiGOBP1 T15A/W43A,6,6,44.0,44.0,0.0,0.0,False,False,True,tot fluix,0.189,15,químicament divers,mal sensor (cap unió forta)
+LstiGOBP1 W43A,6,6,16.22,44.0,0.199,0.433,False,True,True,tot fluix,0.189,15,químicament divers,mal sensor (cap unió forta)
+SspOBP7,6,6,14.19,57.79,0.224,0.61,False,True,True,tot fluix,0.136,15,químicament divers,mal sensor (cap unió forta)
+SspOBP7 Y105F,6,6,32.52,189.54,0.3,0.766,False,True,True,tot fluix,0.136,15,químicament divers,mal sensor (cap unió forta)
+AcerCSP3,5,5,18.77,64.18,0.217,0.534,False,True,True,tot fluix,0.14,10,químicament divers,mal sensor (cap unió forta)
+CcunOBP2,5,5,10.73,66.11,0.304,0.79,False,True,True,tot fluix,0.07,10,químicament divers,mal sensor (cap unió forta)
+CcilCSP2,5,5,19.75,122.98,0.322,0.794,False,True,True,tot fluix,0.128,10,químicament divers,mal sensor (cap unió forta)
+HoblOBP5,5,5,21.4,61.7,0.193,0.46,False,True,True,tot fluix,0.183,10,químicament divers,mal sensor (cap unió forta)
+HoblOBP24,5,5,6.69,46.23,0.338,0.839,False,True,True,tot fluix,0.183,10,químicament divers,mal sensor (cap unió forta)
+MmedOBP1,5,5,40.69,110.0,0.2,0.432,False,False,True,tot fluix,0.144,10,químicament divers,mal sensor (cap unió forta)
+HoblOBP1 I80A,4,4,28.1,44.0,0.081,0.195,False,True,True,tot fluix,0.092,6,químicament divers,mal sensor (cap unió forta)
+HoblOBP1 Y111A,4,4,44.0,44.0,0.0,0.0,False,False,True,tot fluix,0.092,6,químicament divers,mal sensor (cap unió forta)
+HoblOBP8,4,4,13.02,48.21,0.253,0.569,False,True,True,tot fluix,0.214,6,química mixta,mal sensor (cap unió forta)
+BgerOBP26,3,3,241.99,856.81,0.301,0.549,False,False,True,tot fluix,0.391,3,química mixta,mal sensor (cap unió forta)
+BgerOBP40,3,3,241.72,573.59,0.19,0.375,False,False,True,tot fluix,0.391,3,química mixta,mal sensor (cap unió forta)
+McinOBP1 E130A,3,3,25.57,66.54,0.208,0.415,False,True,True,tot fluix,0.08,3,químicament divers,mal sensor (cap unió forta)
+McinOBP1 L62P,3,3,24.29,47.17,0.154,0.288,False,True,True,tot fluix,0.08,3,químicament divers,mal sensor (cap unió forta)
+MmedOBP3,3,3,51.28,110.0,0.191,0.331,False,False,True,tot fluix,0.163,3,químicament divers,mal sensor (cap unió forta)
+AimelOBP3,39,39,0.3,55.0,0.872,2.263,True,True,True,rang ampli (fort + mitjà + fluix),0.27,741,química mixta,rang ampli (fort + mitjà + fluix) · química mixta
+SexiGOBP2,26,26,0.17,110.0,0.768,2.811,True,True,True,rang ampli (fort + mitjà + fluix),0.355,325,química mixta,rang ampli (fort + mitjà + fluix) · química mixta
+PameOBP2,10,10,0.52,44.0,0.761,1.927,True,True,True,rang ampli (fort + mitjà + fluix),0.271,45,química mixta,rang ampli (fort + mitjà + fluix) · química mixta
+OachPBP1,21,21,0.26,35.2,0.779,2.132,True,True,False,rang ampli,0.323,210,química mixta,rang ampli · química mixta
+SlitGOBP1,9,9,0.3,30.18,0.902,2.003,True,True,False,rang ampli,0.342,36,química mixta,rang ampli · química mixta
+CinfGOBP1,10,10,9.64,17.35,0.089,0.255,False,True,False,rang estret,0.656,45,família química,rang estret · família química
+CinfGOBP2,10,10,9.24,17.18,0.084,0.269,False,True,False,rang estret,0.656,45,família química,rang estret · família química
+DkikPBP1,5,5,6.02,10.47,0.108,0.24,False,True,False,rang estret,0.63,10,família química,rang estret · família química
+GmolCSP8 L30A,5,5,12.51,26.4,0.148,0.324,False,True,False,rang estret,0.868,10,família química,rang estret · família química
+GmolCSP8 T27A,5,5,9.01,26.4,0.221,0.467,False,True,False,rang estret,0.868,10,família química,rang estret · família química
+LmigOBP1 N74A,5,5,22.0,22.0,0.0,0.0,False,True,False,rang estret,1.0,10,família química,rang estret · família química
+AlinOBP1,107,107,1.88,55.0,0.325,1.466,True,True,True,rang estret,0.233,5671,química mixta,rang estret · química mixta
+MmedOBP8,45,45,3.43,55.0,0.347,1.205,True,True,True,rang estret,0.238,990,química mixta,rang estret · química mixta
+GmolOBP16,33,33,7.76,38.5,0.203,0.696,False,True,False,rang estret,0.224,528,química mixta,rang estret · química mixta
+GmolGOBP1,30,30,3.14,54.42,0.286,1.239,True,True,True,rang estret,0.23,435,química mixta,rang estret · química mixta
+GmolOBP11,29,29,3.05,49.03,0.244,1.206,True,True,True,rang estret,0.224,406,química mixta,rang estret · química mixta
+SaveOBP2,20,20,8.7,22.4,0.087,0.411,False,True,False,rang estret,0.205,190,química mixta,rang estret · química mixta
+SaveOBP3,20,20,7.8,20.5,0.088,0.42,False,True,False,rang estret,0.205,190,química mixta,rang estret · química mixta
+GmolOBP10,17,17,5.1,21.86,0.187,0.632,False,True,False,rang estret,0.245,136,química mixta,rang estret · química mixta
+SmosOBP16,16,16,13.28,37.67,0.125,0.453,False,True,False,rang estret,0.247,120,química mixta,rang estret · química mixta
+SmosOBP17,15,15,20.13,32.61,0.064,0.21,False,True,False,rang estret,0.252,105,química mixta,rang estret · química mixta
+AlinOBP4,14,14,9.76,22.0,0.13,0.353,False,True,False,rang estret,0.26,91,química mixta,rang estret · química mixta
+GmolPBP3,13,13,15.26,23.38,0.054,0.185,False,True,False,rang estret,0.244,78,química mixta,rang estret · química mixta
+PxylOBP9,10,10,6.5,34.5,0.22,0.725,False,True,False,rang estret,0.211,45,química mixta,rang estret · química mixta
+GmolOBP4,9,9,6.19,32.27,0.237,0.717,False,True,False,rang estret,0.238,36,química mixta,rang estret · química mixta
+SsicOBP2,7,7,13.52,28.31,0.135,0.321,False,True,False,rang estret,0.245,21,química mixta,rang estret · química mixta
+AgamOBP3,5,5,9.8,13.9,0.07,0.152,False,True,False,rang estret,0.29,10,química mixta,rang estret · química mixta
+AlinOBP14,4,4,7.09,11.18,0.094,0.198,False,True,False,rang estret,0.233,6,química mixta,rang estret · química mixta
+AlinOBP14 N term mut,4,4,8.47,21.53,0.178,0.405,False,True,False,rang estret,0.233,6,química mixta,rang estret · química mixta
+CpalOBP1,83,83,15.93,22.0,0.015,0.14,False,True,False,rang estret,0.151,3403,químicament divers,rang estret · químicament divers
+CpalOBP15,83,83,7.76,22.0,0.083,0.453,False,True,False,rang estret,0.151,3403,químicament divers,rang estret · químicament divers
+SfurOBP11,81,81,3.78,55.0,0.218,1.163,True,True,True,rang estret,0.154,3240,químicament divers,rang estret · químicament divers
+CninOBP2,77,77,12.5,22.0,0.028,0.246,False,True,False,rang estret,0.156,2926,químicament divers,rang estret · químicament divers
+CninOBP6,77,77,11.04,22.0,0.035,0.299,False,True,False,rang estret,0.156,2926,químicament divers,rang estret · químicament divers
+AmalCSP5,54,54,4.52,44.0,0.256,0.988,True,True,True,rang estret,0.182,1431,químicament divers,rang estret · químicament divers
+NlugCSP10,52,52,4.32,55.0,0.298,1.105,True,True,True,rang estret,0.142,1326,químicament divers,rang estret · químicament divers
+AlinOBP6,46,46,7.72,33.0,0.201,0.631,False,True,False,rang estret,0.145,1035,químicament divers,rang estret · químicament divers
+NlugOBP3,41,41,4.9,55.0,0.315,1.05,True,True,True,rang estret,0.152,820,químicament divers,rang estret · químicament divers
+AlinCSP5,40,40,8.72,33.0,0.19,0.578,False,True,False,rang estret,0.17,780,químicament divers,rang estret · químicament divers
+AlinCSP6,40,40,6.63,33.0,0.18,0.697,False,True,False,rang estret,0.17,780,químicament divers,rang estret · químicament divers
+CsupCSP1,38,38,7.77,33.0,0.21,0.628,False,True,False,rang estret,0.184,703,químicament divers,rang estret · químicament divers
+CsupCSP2,38,38,8.89,33.0,0.195,0.57,False,True,False,rang estret,0.184,703,químicament divers,rang estret · químicament divers
+CsupCSP3,38,38,6.23,33.0,0.167,0.724,False,True,False,rang estret,0.184,703,químicament divers,rang estret · químicament divers
+CsupOBP3,34,34,10.21,22.0,0.07,0.333,False,True,False,rang estret,0.169,561,químicament divers,rang estret · químicament divers
+CsupOBP8,34,34,4.9,55.0,0.244,1.05,True,True,True,rang estret,0.199,561,químicament divers,rang estret · químicament divers
+CsupOBP11,34,34,13.32,33.0,0.094,0.394,False,True,False,rang estret,0.169,561,químicament divers,rang estret · químicament divers
+CsupOBP15,34,34,33.0,33.0,0.0,0.0,False,True,False,rang estret,0.169,561,químicament divers,rang estret · químicament divers
+CsupOBP17,34,34,16.53,33.0,0.071,0.3,False,True,False,rang estret,0.169,561,químicament divers,rang estret · químicament divers
+CsupOBP19,34,34,11.56,33.0,0.14,0.456,False,True,False,rang estret,0.169,561,químicament divers,rang estret · químicament divers
+CsupOBP31,34,34,9.26,33.0,0.131,0.552,False,True,False,rang estret,0.169,561,químicament divers,rang estret · químicament divers
+CmedOBP2,33,33,3.5,55.0,0.319,1.196,True,True,True,rang estret,0.166,528,químicament divers,rang estret · químicament divers
+LstiGOBP2,32,32,4.7,55.0,0.233,1.068,True,True,True,rang estret,0.146,496,químicament divers,rang estret · químicament divers
+HoblCSP1,30,30,4.3,110.0,0.343,1.408,True,True,True,rang estret,0.106,435,químicament divers,rang estret · químicament divers
+McinOBP1,22,22,2.96,55.0,0.327,1.269,True,True,True,rang estret,0.175,231,químicament divers,rang estret · químicament divers
+CpinGOBP2,19,19,5.34,11.0,0.076,0.314,False,True,False,rang estret,0.183,171,químicament divers,rang estret · químicament divers
+CpinPBP4,19,19,11.0,13.91,0.023,0.102,False,True,False,rang estret,0.183,171,químicament divers,rang estret · químicament divers
+CsinGOBP2,19,19,8.28,33.0,0.222,0.6,False,True,False,rang estret,0.115,171,químicament divers,rang estret · químicament divers
+MvitGOBP1,17,17,10.87,28.81,0.11,0.423,False,True,False,rang estret,0.197,136,químicament divers,rang estret · químicament divers
+MvitGOBP2,17,17,3.81,55.0,0.299,1.159,True,True,True,rang estret,0.197,136,químicament divers,rang estret · químicament divers
+MvitPBP2,17,17,18.14,32.14,0.069,0.248,False,True,False,rang estret,0.197,136,químicament divers,rang estret · químicament divers
+MvitPBP3,17,17,7.64,35.36,0.171,0.665,False,True,False,rang estret,0.197,136,químicament divers,rang estret · químicament divers
+EoblGOBP2,16,16,4.35,55.0,0.329,1.102,True,True,True,rang estret,0.143,120,químicament divers,rang estret · químicament divers
+CbuqPBP1,13,13,9.82,36.89,0.181,0.575,False,True,False,rang estret,0.109,78,químicament divers,rang estret · químicament divers
+DcitCSP1,13,13,7.31,28.17,0.187,0.586,False,True,False,rang estret,0.101,78,químicament divers,rang estret · químicament divers
+LstiPBP1,11,11,4.97,88.91,0.349,1.253,True,True,True,rang estret,0.108,55,químicament divers,rang estret · químicament divers
+HparOBP2,10,10,12.9,35.2,0.152,0.436,False,True,False,rang estret,0.113,45,químicament divers,rang estret · químicament divers
+GmolOBP5,9,9,13.32,33.1,0.124,0.395,False,True,False,rang estret,0.121,36,químicament divers,rang estret · químicament divers
+MmedCSP3,9,9,17.24,39.22,0.131,0.357,False,True,False,rang estret,0.197,36,químicament divers,rang estret · químicament divers
+CquiOBP5,8,8,5.6,10.1,0.095,0.256,False,True,False,rang estret,0.115,28,químicament divers,rang estret · químicament divers
+MmedNPC2a,7,7,13.83,25.12,0.119,0.259,False,True,False,rang estret,0.151,21,químicament divers,rang estret · químicament divers
+SsicOBP1,7,7,12.82,23.29,0.097,0.259,False,True,False,rang estret,0.195,21,químicament divers,rang estret · químicament divers
+AlinOBP2,6,6,9.22,21.53,0.13,0.368,False,True,False,rang estret,0.163,15,químicament divers,rang estret · químicament divers
+BodoOBP1,6,6,12.39,33.0,0.174,0.425,False,True,False,rang estret,0.183,15,químicament divers,rang estret · químicament divers
+BodoOBP2,6,6,10.53,33.0,0.203,0.496,False,True,False,rang estret,0.183,15,químicament divers,rang estret · químicament divers
+EoblOBP6,6,6,5.55,18.31,0.185,0.518,False,True,False,rang estret,0.124,15,químicament divers,rang estret · químicament divers
+LsatOBP13,6,6,9.22,12.59,0.045,0.135,False,True,False,rang estret,0.088,15,químicament divers,rang estret · químicament divers
+LstiGOBP1,6,6,7.73,18.75,0.135,0.385,False,True,False,rang estret,0.189,15,químicament divers,rang estret · químicament divers
+LstiGOBP1 V14A,6,6,16.42,24.62,0.066,0.176,False,True,False,rang estret,0.189,15,químicament divers,rang estret · químicament divers
+RpadOBP3,6,6,8.9,12.2,0.052,0.137,False,True,False,rang estret,0.09,15,químicament divers,rang estret · químicament divers
+RpadOBP7,6,6,6.4,18.7,0.174,0.466,False,True,False,rang estret,0.09,15,químicament divers,rang estret · químicament divers
+SexiOBP7,6,6,7.58,17.63,0.166,0.367,False,True,False,rang estret,0.152,15,químicament divers,rang estret · químicament divers
+SfurOBP3,5,5,6.57,10.4,0.08,0.199,False,True,False,rang estret,0.123,10,químicament divers,rang estret · químicament divers
+CvesOBP5,4,4,5.7,7.2,0.053,0.101,False,True,False,rang estret,0.089,6,químicament divers,rang estret · químicament divers
+HoblOBP1 M48A,4,4,9.7,24.2,0.178,0.397,False,True,False,rang estret,0.092,6,químicament divers,rang estret · químicament divers
+CquiOBP1,3,3,5.3,6.6,0.052,0.095,False,True,False,rang estret,0.174,3,químicament divers,rang estret · químicament divers
+SlitCSP6,3,3,16.63,18.0,0.02,0.034,False,True,False,rang estret,0.051,1,químicament divers,rang estret · químicament divers
+SlitCSP9,3,3,19.06,29.21,0.096,0.185,False,True,False,rang estret,0.051,1,químicament divers,rang estret · químicament divers
+SlitCSP18,3,3,5.89,22.2,0.31,0.576,False,True,False,rang estret,0.051,1,químicament divers,rang estret · químicament divers
+HassPBP1,21,21,0.68,7.52,0.367,1.044,True,True,False,rang mitjà,0.58,210,família química,rang mitjà · família química
+HassPBP2,21,21,0.56,22.0,0.523,1.594,True,True,False,rang mitjà,0.58,210,família química,rang mitjà · família química
+HassPBP3,21,21,0.64,22.0,0.533,1.536,True,True,False,rang mitjà,0.58,210,família química,rang mitjà · família química
+AipsPBP1,15,15,0.33,33.0,0.711,2.0,True,True,False,rang mitjà,0.473,105,família química,rang mitjà · família química
+AipsPBP3,15,15,0.48,33.0,0.607,1.837,True,True,False,rang mitjà,0.473,105,família química,rang mitjà · família química
+SinfPBP2,13,13,0.78,13.2,0.523,1.228,True,True,False,rang mitjà,0.564,78,família química,rang mitjà · família química
+LmigOBP1 V87A,5,5,1.54,22.0,0.472,1.155,True,True,False,rang mitjà,1.0,10,família química,rang mitjà · família química
+OfurPBP5,4,4,1.14,6.8,0.445,0.776,True,True,False,rang mitjà,0.8,6,família química,rang mitjà · família química
+OfurPBP4,3,3,2.13,9.19,0.367,0.635,True,True,False,rang mitjà,0.8,3,família química,rang mitjà · família química
+HarmOBP5,73,73,10.31,110.0,0.362,1.028,False,True,True,rang mitjà,0.209,2628,química mixta,rang mitjà · química mixta
+LmigOBP1,56,56,0.58,22.0,0.564,1.579,True,True,False,rang mitjà,0.274,1540,química mixta,rang mitjà · química mixta
+MmedOBP9,46,46,1.32,55.0,0.505,1.62,True,True,True,rang mitjà,0.235,1035,química mixta,rang mitjà · química mixta
+AimelOBP3 N90L,39,39,1.4,55.0,0.511,1.594,True,True,True,rang mitjà,0.27,741,química mixta,rang mitjà · química mixta
+AimelOBP3 S122A,39,39,1.0,55.0,0.629,1.74,True,True,True,rang mitjà,0.27,741,química mixta,rang mitjà · química mixta
+AimelOBP5,39,39,0.6,55.0,0.665,1.962,True,True,True,rang mitjà,0.27,741,química mixta,rang mitjà · química mixta
+AmalOBP3,39,39,3.58,77.0,0.454,1.333,True,True,True,rang mitjà,0.201,741,química mixta,rang mitjà · química mixta
+AmalOBP8,39,39,1.29,44.0,0.442,1.533,True,True,True,rang mitjà,0.201,741,química mixta,rang mitjà · química mixta
+AipsGOBP2,33,33,1.2,33.0,0.491,1.439,True,True,False,rang mitjà,0.279,528,química mixta,rang mitjà · química mixta
+GmolOBP12,33,33,2.73,38.5,0.36,1.149,True,True,False,rang mitjà,0.224,528,química mixta,rang mitjà · química mixta
+SexiGOBP1,33,33,2.1,44.0,0.407,1.321,True,True,True,rang mitjà,0.287,528,química mixta,rang mitjà · química mixta
+SexiPBP1,32,32,0.34,44.0,0.698,2.112,True,True,True,rang mitjà,0.287,496,química mixta,rang mitjà · química mixta
+SexiPBP2,32,32,1.24,44.0,0.504,1.55,True,True,True,rang mitjà,0.287,496,química mixta,rang mitjà · química mixta
+SexiPBP3,32,32,2.25,44.0,0.444,1.291,True,True,True,rang mitjà,0.287,496,química mixta,rang mitjà · química mixta
+AlepGOBP2,27,27,0.65,22.0,0.446,1.53,True,True,False,rang mitjà,0.206,300,química mixta,rang mitjà · química mixta
+CpunPBP2,24,24,0.4,20.04,0.476,1.7,True,True,False,rang mitjà,0.214,276,química mixta,rang mitjà · química mixta
+CpunPBP5,24,24,0.36,20.36,0.413,1.752,True,True,False,rang mitjà,0.214,276,química mixta,rang mitjà · química mixta
+SlitPBP1,24,24,0.56,14.87,0.504,1.424,True,True,False,rang mitjà,0.34,276,química mixta,rang mitjà · química mixta
+SinfCSP19,23,23,0.49,22.05,0.583,1.653,True,True,False,rang mitjà,0.321,253,química mixta,rang mitjà · química mixta
+SlitGOBP2,23,23,0.16,19.6,0.486,2.088,True,True,False,rang mitjà,0.378,253,química mixta,rang mitjà · química mixta
+AlepPBP1,20,20,0.77,22.0,0.441,1.456,True,True,False,rang mitjà,0.253,190,química mixta,rang mitjà · química mixta
+CsasGOBP1,20,20,0.95,33.0,0.492,1.541,True,True,False,rang mitjà,0.281,190,química mixta,rang mitjà · química mixta
+CsasGOBP2,20,20,0.85,33.0,0.53,1.589,True,True,False,rang mitjà,0.281,190,química mixta,rang mitjà · química mixta
+CsasPBP1,20,20,1.03,33.0,0.489,1.506,True,True,False,rang mitjà,0.281,190,química mixta,rang mitjà · química mixta
+CsasPBP2,20,20,1.1,33.0,0.361,1.477,True,True,False,rang mitjà,0.281,190,química mixta,rang mitjà · química mixta
+CsasPBP3,20,20,1.26,33.0,0.477,1.418,True,True,False,rang mitjà,0.281,190,química mixta,rang mitjà · química mixta
+AgamOBP19,19,19,1.0,16.1,0.378,1.207,True,True,False,rang mitjà,0.293,171,química mixta,rang mitjà · química mixta
+CpunGOP1,18,18,0.35,33.53,0.519,1.981,True,True,False,rang mitjà,0.255,153,química mixta,rang mitjà · química mixta
+CpunGOP2,18,18,1.64,75.89,0.407,1.665,True,True,True,rang mitjà,0.255,153,química mixta,rang mitjà · química mixta
+LbotPBP1,16,16,3.4,391.1,0.571,2.061,True,True,True,rang mitjà,0.278,120,química mixta,rang mitjà · química mixta
+GmolGOBP2,14,14,1.22,81.58,0.496,1.825,True,True,True,rang mitjà,0.214,91,química mixta,rang mitjà · química mixta
+PxylOBP3,12,12,3.7,82.6,0.386,1.349,True,True,True,rang mitjà,0.219,66,química mixta,rang mitjà · química mixta
+AgamOBP12,11,11,1.1,19.8,0.391,1.255,True,True,False,rang mitjà,0.253,55,química mixta,rang mitjà · química mixta
+PameOBP1,10,10,0.92,44.0,0.723,1.68,True,True,True,rang mitjà,0.271,45,química mixta,rang mitjà · química mixta
+PxylOBP19,9,9,1.8,35.4,0.44,1.294,True,True,False,rang mitjà,0.233,36,química mixta,rang mitjà · química mixta
+AquaOBP4,7,7,12.7,170.54,0.371,1.128,False,True,True,rang mitjà,0.243,21,química mixta,rang mitjà · química mixta
+DmelOBP28a,7,7,1.3,9.0,0.353,0.84,True,True,False,rang mitjà,0.214,21,química mixta,rang mitjà · química mixta
+GmelGOBP2,6,6,13.08,420.0,0.547,1.507,False,True,True,rang mitjà,0.372,15,química mixta,rang mitjà · química mixta
+CpomPBP2,4,4,4.14,97.03,0.6,1.37,True,True,True,rang mitjà,0.258,6,química mixta,rang mitjà · química mixta
+SexiOBP13,4,4,3.82,27.59,0.393,0.859,True,True,False,rang mitjà,0.281,6,química mixta,rang mitjà · química mixta
+CpalOBP10,83,83,0.31,22.0,0.441,1.851,True,True,False,rang mitjà,0.151,3403,químicament divers,rang mitjà · químicament divers
+CninOBP10,77,77,0.33,22.0,0.352,1.824,True,True,False,rang mitjà,0.156,2926,químicament divers,rang mitjà · químicament divers
+BhorOBPm2,55,55,0.86,529.1,0.578,2.789,True,True,True,rang mitjà,0.162,1485,químicament divers,rang mitjà · químicament divers
+BhorOBPm2 Y50F,52,52,5.37,819.67,0.475,2.184,False,True,True,rang mitjà,0.162,1326,químicament divers,rang mitjà · químicament divers
+PameOBP24,50,50,2.0,75.66,0.405,1.578,True,True,True,rang mitjà,0.138,1225,químicament divers,rang mitjà · químicament divers
+AfasOBP11,46,46,0.76,22.0,0.374,1.462,True,True,False,rang mitjà,0.14,1035,químicament divers,rang mitjà · químicament divers
+AlinCSP4,40,40,1.13,33.0,0.411,1.465,True,True,False,rang mitjà,0.17,780,químicament divers,rang mitjà · químicament divers
+BhorOBPm2 C-ter113,40,40,35.56,961.54,0.39,1.432,False,True,True,rang mitjà,0.183,780,químicament divers,rang mitjà · químicament divers
+CmedPBP4,39,39,0.23,55.0,0.613,2.379,True,True,True,rang mitjà,0.155,741,químicament divers,rang mitjà · químicament divers
+CsupGOBP1,37,37,0.33,22.0,0.445,1.824,True,True,False,rang mitjà,0.18,666,químicament divers,rang mitjà · químicament divers
+CsupGOBP2,37,37,0.36,22.0,0.492,1.786,True,True,False,rang mitjà,0.18,666,químicament divers,rang mitjà · químicament divers
+HoblOBP1,37,37,6.35,110.0,0.379,1.239,False,True,True,rang mitjà,0.141,666,químicament divers,rang mitjà · químicament divers
+MsepCSP5,35,35,5.06,206.76,0.376,1.611,False,True,True,rang mitjà,0.165,595,químicament divers,rang mitjà · químicament divers
+HoblOBP2,33,33,5.36,110.0,0.352,1.312,False,True,True,rang mitjà,0.156,528,químicament divers,rang mitjà · químicament divers
+HoblCSP2,30,30,4.47,110.0,0.358,1.391,True,True,True,rang mitjà,0.106,435,químicament divers,rang mitjà · químicament divers
+PameCSP7,28,28,1.17,64.5,0.387,1.741,True,True,True,rang mitjà,0.134,378,químicament divers,rang mitjà · químicament divers
+CmedOBP14,25,25,1.42,103.2,0.437,1.861,True,True,True,rang mitjà,0.155,300,químicament divers,rang mitjà · químicament divers
+PxylGOBP2,25,25,0.98,72.37,0.415,1.868,True,True,True,rang mitjà,0.142,300,químicament divers,rang mitjà · químicament divers
+SfurCSP5,24,24,1.39,55.0,0.655,1.597,True,False,True,rang mitjà,0.131,276,químicament divers,rang mitjà · químicament divers
+SlitCSP8,22,22,5.07,55.0,0.401,1.035,False,True,True,rang mitjà,0.093,210,químicament divers,rang mitjà · químicament divers
+OachPBP2,21,21,0.17,35.2,0.703,2.316,True,True,False,rang mitjà,0.168,210,químicament divers,rang mitjà · químicament divers
+MaltOBP13,20,20,0.77,64.82,0.451,1.925,True,True,True,rang mitjà,0.152,190,químicament divers,rang mitjà · químicament divers
+AmelOBP14,19,19,0.09,16.8,0.573,2.271,True,True,False,rang mitjà,0.158,171,químicament divers,rang mitjà · químicament divers
+CpalOBP4,19,19,2.59,22.0,0.352,0.929,True,True,False,rang mitjà,0.129,171,químicament divers,rang mitjà · químicament divers
+CpinPBP2,19,19,0.28,11.0,0.459,1.594,True,True,False,rang mitjà,0.183,171,químicament divers,rang mitjà · químicament divers
+GmolPBP2,19,19,1.09,13.1,0.356,1.08,True,True,False,rang mitjà,0.191,171,químicament divers,rang mitjà · químicament divers
+SlitCSP3,19,19,7.18,55.0,0.401,0.884,False,True,True,rang mitjà,0.101,171,químicament divers,rang mitjà · químicament divers
+SlitCSP11,19,19,4.93,55.0,0.368,1.048,True,True,True,rang mitjà,0.101,171,químicament divers,rang mitjà · químicament divers
+MaltOBP3,17,17,0.89,55.0,0.476,1.791,True,True,True,rang mitjà,0.19,136,químicament divers,rang mitjà · químicament divers
+MperOBP7,17,17,0.9,55.0,0.497,1.786,True,True,True,rang mitjà,0.124,136,químicament divers,rang mitjà · químicament divers
+TputCSP1,17,17,1.71,922.78,0.745,2.732,True,True,True,rang mitjà,0.107,136,químicament divers,rang mitjà · químicament divers
+TputCSP2,17,17,13.24,619.56,0.462,1.67,False,True,True,rang mitjà,0.107,136,químicament divers,rang mitjà · químicament divers
+DhelOBP21 S67A,16,16,25.61,609.76,0.428,1.377,False,True,True,rang mitjà,0.159,120,químicament divers,rang mitjà · químicament divers
+HcunPBP1,16,16,0.76,22.0,0.476,1.462,True,True,False,rang mitjà,0.171,120,químicament divers,rang mitjà · químicament divers
+HcunPBP2,16,16,0.27,22.0,0.634,1.911,True,True,False,rang mitjà,0.171,120,químicament divers,rang mitjà · químicament divers
+HcunPBP3,16,16,0.7,22.0,0.583,1.497,True,True,False,rang mitjà,0.171,120,químicament divers,rang mitjà · químicament divers
+PxylGOBP1,16,16,5.14,471.56,0.573,1.963,False,True,True,rang mitjà,0.14,120,químicament divers,rang mitjà · químicament divers
+DhelOBP21,15,15,14.21,367.65,0.379,1.413,False,True,True,rang mitjà,0.156,105,químicament divers,rang mitjà · químicament divers
+DhelOBP21 I84N,14,14,16.85,961.54,0.51,1.756,False,True,True,rang mitjà,0.145,91,químicament divers,rang mitjà · químicament divers
+AcerCSP2,13,13,1.08,83.17,0.583,1.887,True,True,True,rang mitjà,0.137,78,químicament divers,rang mitjà · químicament divers
+CforOBP1,13,13,0.85,12.74,0.415,1.176,True,True,False,rang mitjà,0.139,78,químicament divers,rang mitjà · químicament divers
+MaltCSP5,13,13,22.28,590.92,0.419,1.424,False,True,True,rang mitjà,0.12,78,químicament divers,rang mitjà · químicament divers
+AgamSAP2,12,12,3.41,33.0,0.444,0.986,True,True,False,rang mitjà,0.176,66,químicament divers,rang mitjà · químicament divers
+AgamSAP3,12,12,0.92,33.0,0.469,1.555,True,True,False,rang mitjà,0.176,66,químicament divers,rang mitjà · químicament divers
+AgamCSP3,12,12,0.64,33.0,0.655,1.712,True,True,False,rang mitjà,0.176,66,químicament divers,rang mitjà · químicament divers
+AgamCSP6,12,12,1.79,33.0,0.43,1.266,True,True,False,rang mitjà,0.176,66,químicament divers,rang mitjà · químicament divers
+MaltOBP1,12,12,4.15,55.0,0.358,1.122,True,True,True,rang mitjà,0.181,66,químicament divers,rang mitjà · químicament divers
+AcerCSP1,10,10,0.84,18.68,0.425,1.347,True,True,False,rang mitjà,0.126,45,químicament divers,rang mitjà · químicament divers
+AcerCSP4,10,10,3.72,414.67,0.733,2.047,True,True,True,rang mitjà,0.135,45,químicament divers,rang mitjà · químicament divers
+AcerOBP2,10,10,2.72,64.77,0.479,1.377,True,True,True,rang mitjà,0.141,45,químicament divers,rang mitjà · químicament divers
+EoblPBP2,10,10,7.92,230.88,0.478,1.465,False,True,True,rang mitjà,0.148,45,químicament divers,rang mitjà · químicament divers
+HarmCSP5,10,10,5.54,113.15,0.427,1.31,False,True,True,rang mitjà,0.115,45,químicament divers,rang mitjà · químicament divers
+CforOBP2,9,9,0.77,21.6,0.528,1.448,True,True,False,rang mitjà,0.179,36,químicament divers,rang mitjà · químicament divers
+AgamOBP47,8,8,1.2,16.8,0.418,1.146,True,True,False,rang mitjà,0.087,28,químicament divers,rang mitjà · químicament divers
+AcerASP1,7,7,10.83,150.32,0.488,1.142,False,True,True,rang mitjà,0.177,21,químicament divers,rang mitjà · químicament divers
+BdorOBP2,7,7,9.96,106.69,0.436,1.03,False,True,True,rang mitjà,0.173,21,químicament divers,rang mitjà · químicament divers
+LstiPBP3,6,6,9.2,75.93,0.365,0.917,False,True,True,rang mitjà,0.119,15,químicament divers,rang mitjà · químicament divers
+AmelOBP16,5,5,0.5,12.9,0.593,1.412,True,True,False,rang mitjà,0.132,10,químicament divers,rang mitjà · químicament divers
+HoblOBP9,5,5,15.65,118.12,0.357,0.878,False,True,True,rang mitjà,0.183,10,químicament divers,rang mitjà · químicament divers
+MmedOBP7,5,5,15.51,110.0,0.38,0.851,False,True,True,rang mitjà,0.12,10,químicament divers,rang mitjà · químicament divers
+SfurOBP2,5,5,2.16,14.75,0.363,0.834,True,True,False,rang mitjà,0.153,10,químicament divers,rang mitjà · químicament divers
+McinOBP1 V58A,3,3,12.69,66.16,0.365,0.717,False,True,True,rang mitjà,0.08,3,químicament divers,rang mitjà · químicament divers
+rabOBP3,3,3,2.2,11.2,0.371,0.707,True,True,False,rang mitjà,0.051,3,químicament divers,rang mitjà · químicament divers
+SinfPBP1,13,13,0.72,13.2,0.318,1.263,True,True,False,tot fort,0.564,78,família química,super-selectiu (motiu concret)
+SinfPBP3,13,13,4.43,13.2,0.159,0.474,True,True,False,tot fort,0.564,78,família química,super-selectiu (motiu concret)
+SexiOPB2,7,7,2.16,8.44,0.187,0.592,True,True,False,tot fort,0.413,21,família química,super-selectiu (motiu concret)
+DkikPBP2,6,6,2.24,9.27,0.242,0.617,True,True,False,tot fort,0.575,15,família química,super-selectiu (motiu concret)
+HarmPBP1,6,6,0.9,2.28,0.191,0.404,True,False,False,tot fort,0.583,15,família química,super-selectiu (motiu concret)
+HarmPBP2,6,6,0.65,2.42,0.25,0.571,True,False,False,tot fort,0.583,15,família química,super-selectiu (motiu concret)
+HarmPBP3,6,6,1.44,5.2,0.242,0.558,True,True,False,tot fort,0.583,15,família química,super-selectiu (motiu concret)
+EhipPBP1,5,5,1.18,6.3,0.282,0.727,True,True,False,tot fort,0.582,10,família química,super-selectiu (motiu concret)
+GmolCSP8 L80A,5,5,1.8,6.75,0.248,0.574,True,True,False,tot fort,0.868,10,família química,super-selectiu (motiu concret)
+GmolCSP8 V40A,5,5,2.67,12.36,0.255,0.666,True,True,False,tot fort,0.868,10,família química,super-selectiu (motiu concret)
+LmigOBP1 S59A,5,5,1.61,8.56,0.29,0.726,True,True,False,tot fort,1.0,10,família química,super-selectiu (motiu concret)
+OfurPBP2,5,5,2.77,13.88,0.287,0.7,True,True,False,tot fort,0.639,10,família química,super-selectiu (motiu concret)
+DhouPBP2,4,4,3.58,6.55,0.127,0.262,True,True,False,tot fort,0.596,6,família química,super-selectiu (motiu concret)
+HarmCSP6,4,4,0.92,1.38,0.086,0.176,True,False,False,tot fort,0.668,6,família química,super-selectiu (motiu concret)
+OfurPBP1,4,4,4.24,5.01,0.03,0.072,True,True,False,tot fort,0.8,6,família química,super-selectiu (motiu concret)
+OfurPBP3,4,4,1.97,2.86,0.093,0.162,True,False,False,tot fort,0.8,6,família química,super-selectiu (motiu concret)
+DmelOBP76a,3,3,0.09,0.22,0.204,0.388,True,False,False,tot fort,0.405,3,família química,super-selectiu (motiu concret)
+GmolPBP1,3,3,1.73,2.25,0.058,0.114,True,False,False,tot fort,0.474,3,família química,super-selectiu (motiu concret)
+LmigOBP4,58,58,1.96,22.0,0.257,1.05,True,True,False,tot fort,0.276,1653,química mixta,tot fort · química mixta
+GmolCSP8,37,37,2.11,26.4,0.271,1.097,True,True,False,tot fort,0.281,666,química mixta,tot fort · química mixta
+HarmOBP7,35,35,2.4,27.5,0.315,1.059,True,True,False,tot fort,0.248,595,química mixta,tot fort · química mixta
+AipsGOBP1,33,33,2.1,33.0,0.344,1.196,True,True,False,tot fort,0.279,528,química mixta,tot fort · química mixta
+GmolOBP7,33,33,2.52,38.5,0.308,1.184,True,True,False,tot fort,0.224,528,química mixta,tot fort · química mixta
+BmorCSP2,28,28,0.2,4.7,0.35,1.371,True,False,False,tot fort,0.243,378,química mixta,tot fort · química mixta
+GmolOBP8,28,28,2.18,24.8,0.24,1.056,True,True,False,tot fort,0.221,378,química mixta,tot fort · química mixta
+AlepGOBP1,27,27,3.27,22.0,0.265,0.828,True,True,False,tot fort,0.206,300,química mixta,tot fort · química mixta
+SmosOBP11,19,19,3.47,23.74,0.208,0.835,True,True,False,tot fort,0.235,171,química mixta,tot fort · química mixta
+SmosOBP12,19,19,3.33,10.42,0.157,0.495,True,True,False,tot fort,0.211,171,química mixta,tot fort · química mixta
+DarmCSP2,14,14,1.64,18.89,0.327,1.061,True,True,False,tot fort,0.209,91,química mixta,tot fort · química mixta
+EoblPBP1,11,11,0.57,2.96,0.263,0.715,True,False,False,tot fort,0.299,55,química mixta,tot fort · química mixta
+HarmOBP10,10,10,2.6,12.4,0.256,0.678,True,True,False,tot fort,0.224,45,química mixta,tot fort · química mixta
+AplaOBP1,9,9,3.38,9.25,0.128,0.437,True,True,False,tot fort,0.215,36,química mixta,tot fort · química mixta
+OcorOBP5,8,8,2.5,9.1,0.184,0.561,True,True,False,tot fort,0.221,28,química mixta,tot fort · química mixta
+BmorCSP4,5,5,2.04,3.2,0.079,0.196,True,False,False,tot fort,0.261,10,química mixta,tot fort · química mixta

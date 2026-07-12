@@ -1,0 +1,46 @@
+# VOCs interferents comuns a la vinya que coincideixen amb Compound_info
+# Línies amb # o buides s'ignoren
+87-44-5
+β-cyclocitral
+diisobutyl phthalate
+112-31-2
+hexanal
+1-octen-3-ol
+acetic acid
+1-octen-3-one
+octanal
+nonanal
+benzaldehyde
+2-Hexen-1-ol
+1-hexanol
+2-Ethyl-1-hexanol
+142-62-1
+methyl salicylate
+502-61-4
+18794-84-8
+106-25-2
+7212-44-4
+stearic acid
+1-Octanol
+1-Nonanol
+2-pentylfuran
+13877-91-3
+Geranylacetone
+3-octanone
+Benzyl alcohol
+Phenylethyl alcohol
+2-undecanone
+99-83-2
+α-terpinene
+5989-27-5
+122-78-1
+γ-terpinene
+Dodecanal
+Furfural
+p-Menth-1-en-8-ol
+Hexadecanoic acid, ethyl ester
+Geraniol
+p-Xylene
+Styrene
+sesquiphellandrene
+ 

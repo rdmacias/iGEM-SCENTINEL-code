@@ -1,7 +1,7 @@
 """
 generate_report.py  —  OBP Finder | Informe PDF complet (iGEM URV 2025)
 
-Executa els 3 mètodes (determinista, Dirichlet, SMAA pur) i genera
+Executa els 3 mètodes (determinista, Perturbació, SMAA pur) i genera
 un informe PDF descarregable a cada execució.
 """
 
@@ -26,9 +26,13 @@ from main import (
     ask_user_for_weights,
     ask_user_for_tau,
     build_obp_ranking,
-    BINDING_FILE,
+    resolve_data_file,
+    BINDING_FILE_EXPERIMENTAL,
+    BINDING_FILE_PREDICTED,
+    BINDING_FILE_PREDICTED_AFFINITY,
     INFO_FILE,
 )
+import confianca as cf
 from SMAAA import smaa_complet
 
 # ── Paleta de colors ──────────────────────────────────────────────────────────
@@ -89,7 +93,7 @@ def page_cover(pdf, voc_name, voc_cas, weights, tau, how_many,
         f"  w₅ promiscuïtat  :  {w['w_promiscuity']:.3f}\n"
         f"\n"
         f"  ─── Configuració SMAA ───────────────────\n"
-        f"  Mètode 2 (Dirichlet) :  c = {c_val:.0f}%,  {n_iter:,} iteracions\n"
+        f"  Mètode 2 (Perturbació) :  c = {c_val:.0f}%,  {n_iter:,} iteracions\n"
         f"  Mètode 3 (SMAA pur)  :  {n_iter:,} iteracions\n"
     )
     fig.text(0.12, 0.64, info, ha='left', va='top',
@@ -343,6 +347,50 @@ def page_table3_boltz(pdf, df_table2_sorted, voc_name, max_rows=35):
     _save(pdf, fig)
 
 
+# ── Pàgina opcional: Comparació experimental vs computacional ───────────────
+
+def page_top10_comparison(pdf, experimental_table, predicted_table, voc_name, how_many):
+    exp_top = experimental_table.head(how_many)
+    pred_top = predicted_table.head(how_many)
+
+    fig, axes = plt.subplots(1, 2, figsize=(11.69, 8.27))
+    fig.patch.set_facecolor(C_BG)
+    fig.suptitle(
+        f"Top {how_many} candidats — Experimental vs. Computacional  |  VOC: {voc_name}",
+        fontsize=13, fontweight='bold', color=C_HEADER, y=0.98
+    )
+
+    for ax, title, df, color in [
+        (axes[0], "Dades experimentals", exp_top, C_SCORE),
+        (axes[1], "Dades computacionals", pred_top, '#DD8452'),
+    ]:
+        ax.set_facecolor('white')
+        values = df['Score'].tolist()
+        names = df['OBP'].str[:20].tolist()
+        ax.barh(range(len(values)), values, color=color, edgecolor='white', height=0.65)
+        ax.set_yticks(range(len(values)))
+        ax.set_yticklabels(names, fontsize=8)
+        ax.invert_yaxis()
+        ax.set_title(title, fontsize=10)
+        ax.set_xlabel('Score final', fontsize=9)
+        xlim = max(max(values) * 1.18, 0.08) if values else 1.0
+        ax.set_xlim(0, xlim)
+        for i, val in enumerate(values):
+            ax.text(val + xlim * 0.01, i, f"{val:.4f}", va='center', fontsize=7)
+
+    plt.tight_layout(rect=[0, 0, 1, 0.94])
+    _save(pdf, fig)
+
+
+def page_missing_predicted(pdf, voc_name, message):
+    fig = _fig()
+    fig.suptitle(f"Rànquing computacional no disponible  |  VOC: {voc_name}",
+                 fontsize=13, fontweight='bold', color=C_HEADER, y=0.92)
+    fig.text(0.5, 0.58, message,
+             ha='center', va='center', fontsize=11, color='#B33A3A', wrap=True)
+    _save(pdf, fig)
+
+
 # ── Pàgines 5/6: SMAA ────────────────────────────────────────────────────────
 
 def page_smaa(pdf, result_table, rank_accept, central_w, voc_name, how_many, mode_label):
@@ -443,7 +491,7 @@ def page_comparison(pdf, result_table, rank_accept_d, rank_accept_s, voc_name, h
          top_det['OBP'].str[:22].tolist(),
          top_det['Score'].tolist(),
          C_SCORE),
-        ("M2: SMAA Dirichlet\np(rang 1)",
+        ("M2: Perturbació\np(rang 1)",
          [result_table.iloc[i]['OBP'][:22] for i in order_d[:how_many]],
          [rank_accept_d[i, 0] for i in order_d[:how_many]],
          '#4C72B0'),
@@ -477,13 +525,16 @@ def main():
     print("OBP FINDER — Generació d'Informe PDF | iGEM URV 2025")
     print("Executa els 3 mètodes i genera un informe gràfic descarregable.\n")
 
-    for csv_path in (BINDING_FILE, INFO_FILE):
+    exp_binding_file = resolve_data_file(BINDING_FILE_EXPERIMENTAL)
+    info_file = resolve_data_file(INFO_FILE)
+
+    for csv_path in (exp_binding_file, info_file):
         if not os.path.isfile(csv_path):
             print(f"ERROR: No es troba '{csv_path}'.")
             sys.exit(1)
 
     (binding_table, obp_info_table, cas_col, name_col,
-     obp_name_list, LITERATURE_MIN, LITERATURE_MAX) = load_csv_files(BINDING_FILE, INFO_FILE)
+     obp_name_list, LITERATURE_MIN, LITERATURE_MAX) = load_csv_files(exp_binding_file, info_file)
 
     # ── VOC diana ─────────────────────────────────────────────────────────────
     print("Cerca el VOC diana pel nom o CAS (ex: 3391-86-4):")
@@ -530,8 +581,8 @@ def main():
     how_many  = int(top_input) if top_input.isdigit() and int(top_input) > 0 else 10
 
     # ── Paràmetres SMAA ───────────────────────────────────────────────────────
-    print("\n── Configuració SMAA (Mètodes 2 i 3) ──────────────────────────")
-    c_raw = input("  Dispersió c% per a Dirichlet [per defecte 50]: ").strip()
+    print("\n── Configuració SMAA (Mètode 2: pesos aleatoris al voltant del valor introduït) ──────────────────────────")
+    c_raw = input("  Dispersió c% per a la Perturbació [per defecte 50]: ").strip()
     try:
         c_val = float(c_raw)
         if not (0.1 <= c_val <= 100):
@@ -577,12 +628,12 @@ def main():
         result_table['has_s5_data'].values,
     ])
 
-    # ── Mode 2: Dirichlet ─────────────────────────────────────────────────────
-    print(f"\nExecutant Mètode 2 — SMAA Dirichlet ({n_iter:,} iter, c={c_val:.0f}%)...")
+    # ── Mode 2: Perturbació de pesos ────────────────────────────────────────────
+    print(f"\nExecutant Mètode 2 — Perturbació de pesos ({n_iter:,} iter, c={c_val:.0f}%)...")
     rank_accept_d, _, _ = smaa_complet(
         subscores=subscores, te_dada=te_dada,
         n_iter=n_iter, pesos_base=pesos_base_list, c=c_val,
-        mode="dirichlet", seed=42,
+        mode="perturbacio", seed=42,
     )
 
     # ── Mode 3: SMAA pur ──────────────────────────────────────────────────────
@@ -601,12 +652,71 @@ def main():
 
     print(f"\nGenerant informe PDF: {pdf_name}")
 
+    have_predicted_page = False
+    predicted_result_table = None
+    predicted_text = None
+
+    predicted_binding_file = resolve_data_file(BINDING_FILE_PREDICTED)
+    predicted_affinity_file = resolve_data_file(BINDING_FILE_PREDICTED_AFFINITY)
+    if os.path.isfile(predicted_binding_file) and os.path.isfile(predicted_affinity_file):
+        print(f"\nGenerant també rànquing computacional amb dades predites...")
+        pred_binding_table, _, _, _, _, _, _ = load_csv_files(predicted_binding_file, info_file)
+        affinity_binding_table, _, _, _, _, _, _ = load_csv_files(predicted_affinity_file, info_file)
+
+        chosen_voc_pred = validar_voc(pred_binding_table, name_col, cas_col, voc_cas)
+        chosen_voc_aff = validar_voc(affinity_binding_table, name_col, cas_col, voc_cas)
+
+        if chosen_voc_pred is not None:
+            ki_values_diana_pred = pd.Series({col: chosen_voc_pred[col] for col in obp_name_list})
+        else:
+            ki_values_diana_pred = pd.Series({col: chosen_voc[col] for col in obp_name_list})
+
+        ki_values_diana_affinity_pred = None
+        if chosen_voc_aff is not None:
+            ki_values_diana_affinity_pred = pd.Series({col: chosen_voc_aff[col] for col in obp_name_list})
+
+        experimental_ki_values_diana = pd.Series({col: chosen_voc[col] for col in obp_name_list})
+        predicted_result_table = build_obp_ranking(
+            ki_values_diana=ki_values_diana_pred,
+            obp_info_table=obp_info_table,
+            binding_table=pred_binding_table,
+            cas_col=cas_col, name_col=name_col,
+            interferent_list=interferent_list,
+            obp_name_list=obp_name_list,
+            weights=weights,
+            ki_min_matrix=LITERATURE_MIN,
+            ki_max_matrix=LITERATURE_MAX,
+            tau=tau,
+            experimental_ki_values_diana=experimental_ki_values_diana,
+            binding_source_label="predicted",
+            ki_values_diana_affinity=ki_values_diana_affinity_pred,
+        )
+
+        if not predicted_result_table.empty:
+            have_predicted_page = True
+        else:
+            predicted_text = (
+                "✗ No s'ha pogut generar el rànquing predit. "
+                "Revisa els fitxers de dades i torna-ho a executar."
+            )
+    else:
+        predicted_text = (
+            "✗ Fitxers de dades computacionals no disponibles: "
+            f"{BINDING_FILE_PREDICTED} / {BINDING_FILE_PREDICTED_AFFINITY}."
+        )
+
     with PdfPages(pdf_path) as pdf:
         page_cover(pdf, voc_display, voc_cas, weights, tau, how_many,
                    interferent_list, n_iter, c_val, ts_human)
 
         page_mode1_chart(pdf, result_table, voc_display, weights, how_many)
         page_mode1_table(pdf, result_table, voc_display, how_many)
+
+        if have_predicted_page:
+            page_top10_comparison(pdf, result_table, predicted_result_table,
+                                  voc_display, how_many)
+        elif predicted_text is not None:
+            page_missing_predicted(pdf, voc_display, predicted_text)
 
         has_incomplete_data = (~result_table['has_all_interferents']).any()
         n_extra_pages = 0
@@ -616,7 +726,7 @@ def main():
             n_extra_pages = 2
 
         page_smaa(pdf, result_table, rank_accept_d, None,
-                  voc_display, how_many, "Mètode 2 — SMAA Dirichlet")
+                  voc_display, how_many, "Mètode 2 — Perturbació de pesos")
 
         page_smaa(pdf, result_table, rank_accept_s, central_w,
                   voc_display, how_many, "Mètode 3 — SMAA Pur")
@@ -624,7 +734,7 @@ def main():
         page_comparison(pdf, result_table, rank_accept_d, rank_accept_s,
                         voc_display, how_many)
 
-    n_pages = 6 + n_extra_pages
+    n_pages = 6 + n_extra_pages + (1 if have_predicted_page or predicted_text is not None else 0)
     print(f"\n✓ Informe guardat ({n_pages} pàgines): {pdf_path}")
 
 
