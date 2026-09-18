@@ -1,5 +1,5 @@
-# VOCs interferents comuns a la vinya que coincideixen amb Compound_info
-# Línies amb # o buides s'ignoren
+# Common vineyard interfering VOCs that also appear in Compound_info
+# Lines starting with # and blank lines are ignored
 87-44-5
 β-cyclocitral
 diisobutyl phthalate

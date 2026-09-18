@@ -1,28 +1,32 @@
 """
-generate_report.py  —  OBP Finder | Informe PDF complet (iGEM URV 2025)
-
-Executa els 3 mètodes (determinista, Perturbació, SMAA pur) i genera
-un informe PDF descarregable a cada execució.
+generate_report.py  -  SCENTINEL | PDF report (iGEM URV 2026)
+ 
+Runs the 3 methods (deterministic, Perturbation, pure SMAA) and generates a
+downloadable PDF report on every run.
+ 
 """
-
+ 
 import os
 import sys
 import re
 import datetime
+import textwrap
 import numpy as np
 import pandas as pd
-
+ 
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
+from matplotlib.patches import FancyBboxPatch
 from matplotlib.backends.backend_pdf import PdfPages
-
+from matplotlib.colors import LinearSegmentedColormap
+ 
 from main import (
     load_csv_files,
-    validar_voc,
+    validate_voc,
     read_interferent_file,
-    validar_llista_interferents,
+    validate_interferent_list,
     ask_user_for_weights,
     ask_user_for_tau,
     build_obp_ranking,
@@ -31,368 +35,429 @@ from main import (
     BINDING_FILE_PREDICTED,
     BINDING_FILE_PREDICTED_AFFINITY,
     INFO_FILE,
+    DANGER_INTERFERENT_MARGIN,
+    MAX_DANGER_NAMES,
+    SUPERBINDER_KI_MAX,
+    MAX_SUPERBINDER_NAMES,
 )
-import confianca as cf
-from SMAAA import smaa_complet
-
-# ── Paleta de colors ──────────────────────────────────────────────────────────
-C_S1        = "#4C72B0"
-C_S2        = "#DD8452"
-C_S4        = "#55A868"
-C_S5        = "#C44E52"
-C_SCORE     = "#8172B2"
-C_HIGHLIGHT = "#F4C430"
-C_BG        = "#F5F7FA"
-C_HEADER    = "#1a1a2e"
-
-
+import confidence as cf
+from SMAAA import smaa_full
+ 
+# -- SCENTINEL palette (lilac + green, liquid glass) -------------------------
+C_LILAC      = "#8E7CC3"   # primary lilac
+C_LILAC_DK   = "#5B4B8A"   # deep lilac (headers / text)
+C_LILAC_LT   = "#D9CFF0"   # pale lilac (row tint / panels)
+C_GREEN      = "#8FD14F"   # primary green
+C_GREEN_DK   = "#4E9A2A"   # deep green
+C_GREEN_LT   = "#E2F5CE"   # pale green (row tint / panels)
+C_INK        = "#33304A"   # main text
+C_MUTE       = "#8A85A0"   # muted text
+C_BG         = "#F7F5FC"   # page background (very pale lilac)
+C_PANEL      = "#FFFFFF"   # glass panel base
+C_GLOW       = "#B7A9E0"   # soft glow
+C_DANGER     = "#C0508A"   # danger accent (magenta-ish, on-brand)
+ 
+# sub-score accents kept but re-tinted to the SCENTINEL family
+C_S1 = "#7C9CE0"   # affinity  - soft blue
+C_S2 = "#C0508A"   # selectivity - danger magenta
+C_S4 = C_GREEN     # stability - green
+C_S5 = C_LILAC     # promiscuity - lilac
+ 
+# green->lilac colormap for heatmaps
+CMAP_SCENTINEL = LinearSegmentedColormap.from_list(
+    "scentinel", [C_GREEN_LT, C_GREEN, C_LILAC, C_LILAC_DK]
+)
+ 
+ 
+# -- Small helpers -----------------------------------------------------------
+ 
 def _fig(landscape=True):
     size = (11.69, 8.27) if landscape else (8.27, 11.69)
     fig = plt.figure(figsize=size)
     fig.patch.set_facecolor(C_BG)
     return fig
-
-
+ 
+ 
 def _save(pdf, fig):
-    pdf.savefig(fig, bbox_inches='tight')
+    pdf.savefig(fig, bbox_inches='tight', facecolor=fig.get_facecolor())
     plt.close(fig)
-
-
-# ── Pàgina 1: Portada ────────────────────────────────────────────────────────
-
+ 
+ 
+def _bubble(fig, x, y, w, h, facecolor=C_PANEL, edgecolor=C_GLOW,
+            alpha=0.92, lw=1.4, pad=0.014, zorder=0):
+    """Draw a rounded 'liquid-glass' panel in figure coordinates."""
+    ax = fig.add_axes([x, y, w, h])
+    ax.set_xlim(0, 1)
+    ax.set_ylim(0, 1)
+    ax.axis('off')
+    ax.set_zorder(zorder)
+    box = FancyBboxPatch(
+        (0.006, 0.006), 0.988, 0.988,
+        boxstyle=f"round,pad=0,rounding_size={pad}",
+        transform=ax.transAxes,
+        facecolor=facecolor, edgecolor=edgecolor,
+        linewidth=lw, alpha=alpha, mutation_aspect=h / max(w, 1e-6),
+    )
+    ax.add_patch(box)
+    # top glass highlight
+    hi = FancyBboxPatch(
+        (0.04, 0.60), 0.92, 0.36,
+        boxstyle=f"round,pad=0,rounding_size={pad}",
+        transform=ax.transAxes,
+        facecolor="white", edgecolor="none", alpha=0.14,
+    )
+    ax.add_patch(hi)
+    return ax
+ 
+ 
+def _draw_orb(ax, cx=0.5, cy=0.5, r=0.42, green=True):
+    """Draw a simple SCENTINEL liquid-glass orb as a logo."""
+    ax.set_xlim(0, 1)
+    ax.set_ylim(0, 1)
+    ax.set_aspect('equal')
+    ax.axis('off')
+    base = C_GREEN if green else C_LILAC
+    edge = C_GREEN_DK if green else C_LILAC_DK
+    # outer sphere
+    for i, (rr, a) in enumerate([(r, 0.30), (r * 0.82, 0.35), (r * 0.6, 0.45)]):
+        ax.add_patch(plt.Circle((cx, cy), rr, color=base, alpha=a, ec='none'))
+    ax.add_patch(plt.Circle((cx, cy), r, fill=False, ec=edge, lw=1.6, alpha=0.7))
+    # inner bright core (liquid-glass look)
+    ax.add_patch(plt.Circle((cx, cy - r * 0.15), r * 0.5, color='white', alpha=0.55, ec='none'))
+    # top highlight cap
+    ax.add_patch(plt.Circle((cx, cy + r * 0.4), r * 0.42, color='white', alpha=0.4, ec='none'))
+ 
+ 
+def _conf_color(conf):
+    """Row tint by confidence: green (high) -> lilac (mid) -> pale danger (low)."""
+    if pd.isna(conf):
+        return "#FFFFFF"
+    if conf >= 0.80:
+        return C_GREEN_LT
+    if conf >= 0.50:
+        return C_LILAC_LT
+    return "#F6E1EC"   # pale danger
+ 
+ 
+def _fmt(v, nd=3, dash='-'):
+    if v is None or (isinstance(v, float) and pd.isna(v)):
+        return dash
+    return f"{v:.{nd}f}"
+ 
+ 
+# -- get-column helpers (tolerant to naming) ---------------------------------
+ 
+def _col(row, *names, default=np.nan):
+    """Return the first present column among names."""
+    for n in names:
+        if n in row.index:
+            return row[n]
+    return default
+ 
+ 
+# -- Page 1: Cover -----------------------------------------------------------
+ 
 def page_cover(pdf, voc_name, voc_cas, weights, tau, how_many,
                interferent_list, n_iter, c_val, ts):
     fig = _fig()
+ 
+    # background wash panel
+    _bubble(fig, 0.06, 0.08, 0.88, 0.84, facecolor="#FBFAFF",
+            edgecolor=C_GLOW, alpha=0.9, pad=0.03)
+ 
+    # logo orb
+    ax_orb = fig.add_axes([0.42, 0.74, 0.16, 0.16])
+    _draw_orb(ax_orb, green=True)
+ 
     kw = dict(ha='center', va='center', transform=fig.transFigure)
-
-    fig.text(0.5, 0.85, "OBP FINDER — Informe d'Anàlisi",
-             fontsize=22, fontweight='bold', color=C_HEADER, **kw)
-    fig.text(0.5, 0.78, "iGEM URV 2025  ·  Informe automàtic complet (3 mètodes)",
-             fontsize=12, color='#4C72B0', **kw)
-    fig.text(0.5, 0.72, f"Generat: {ts}",
-             fontsize=10, color='#888888', **kw)
-
-    # línia decorativa
-    ax_line = fig.add_axes([0.1, 0.68, 0.8, 0.003])
-    ax_line.set_facecolor('#4C72B0')
-    ax_line.axis('off')
-
+    fig.text(0.5, 0.70, "SCENTINEL", fontsize=30, fontweight='bold',
+             color=C_LILAC_DK, **kw)
+    fig.text(0.5, 0.655, "OBP candidate selection  ·  analysis report",
+             fontsize=12.5, color=C_GREEN_DK, **kw)
+    fig.text(0.5, 0.63, "iGEM URV 2026", fontsize=10, color=C_MUTE, **kw)
+    fig.text(0.5, 0.605, f"Generated: {ts}", fontsize=9, color=C_MUTE, **kw)
+ 
     w = weights
-    interf_str = ', '.join(interferent_list) if interferent_list else '— cap —'
-    info = (
-        f"  VOC diana        :  {voc_name}\n"
-        f"  CAS              :  {voc_cas}\n"
-        f"  Interferents     :  {interf_str}\n"
-        f"  Top N candidats  :  {how_many}\n"
-        f"\n"
-        f"  ─── Pesos ───────────────────────────────\n"
-        f"  τ (selectivitat) :  {tau:.0f}\n"
-        f"  w₁ afinitat      :  {w['w_affinity']:.3f}\n"
-        f"  w₂ selectivitat  :  {w['w_selectivity']:.3f}\n"
-        f"  w₄ estabilitat   :  {w['w_stability']:.3f}\n"
-        f"  w₅ promiscuïtat  :  {w['w_promiscuity']:.3f}\n"
-        f"\n"
-        f"  ─── Configuració SMAA ───────────────────\n"
-        f"  Mètode 2 (Perturbació) :  c = {c_val:.0f}%,  {n_iter:,} iteracions\n"
-        f"  Mètode 3 (SMAA pur)  :  {n_iter:,} iteracions\n"
+    interf_str = ', '.join(interferent_list) if interferent_list else '- none -'
+    if len(interf_str) > 90:
+        interf_str = interf_str[:87] + '...'
+ 
+    left = (
+        f"Target VOC       :  {voc_name}\n"
+        f"CAS              :  {voc_cas}\n"
+        f"Top N candidates :  {how_many}\n"
+        f"Interferents     :  {interf_str}\n"
     )
-    fig.text(0.12, 0.64, info, ha='left', va='top',
-             fontsize=10.5, fontfamily='monospace', color='#222222',
-             linespacing=1.65, transform=fig.transFigure)
-
+    right = (
+        f"tau (selectivity):  {tau:.0f}\n"
+        f"w1 affinity      :  {w['w_affinity']:.3f}\n"
+        f"w2 selectivity   :  {w['w_selectivity']:.3f}\n"
+        f"w4 stability     :  {w['w_stability']:.3f}\n"
+        f"w5 promiscuity   :  {w['w_promiscuity']:.3f}\n"
+    )
+    smaa = (
+        f"Method 2 (Perturbation):  c = {c_val:.0f}%,  {n_iter:,} iterations\n"
+        f"Method 3 (pure SMAA)   :  {n_iter:,} iterations"
+    )
+ 
+    _bubble(fig, 0.12, 0.30, 0.50, 0.20, facecolor=C_GREEN_LT, alpha=0.55)
+    fig.text(0.145, 0.475, left, ha='left', va='top', fontsize=10,
+             fontfamily='monospace', color=C_INK, linespacing=1.7)
+ 
+    _bubble(fig, 0.66, 0.30, 0.22, 0.20, facecolor=C_LILAC_LT, alpha=0.55)
+    fig.text(0.675, 0.475, right, ha='left', va='top', fontsize=10,
+             fontfamily='monospace', color=C_INK, linespacing=1.7)
+ 
+    _bubble(fig, 0.12, 0.15, 0.76, 0.11, facecolor="#FFFFFF", alpha=0.9)
+    fig.text(0.145, 0.205, "SMAA configuration", ha='left', va='top',
+             fontsize=10, fontweight='bold', color=C_LILAC_DK)
+    fig.text(0.145, 0.175, smaa, ha='left', va='top', fontsize=9.5,
+             fontfamily='monospace', color=C_INK, linespacing=1.6)
+ 
     _save(pdf, fig)
-
-
-# ── Pàgina 2: M1 — gràfic scores + subscores ─────────────────────────────────
-
-def page_mode1_chart(pdf, result_table, voc_name, weights, how_many):
+ 
+ 
+# -- Page 2: unified detailed table + vineyard interferent detail ------------
+ 
+def page_detailed_table(pdf, result_table, voc_name, how_many, is_predicted=False):
     top = result_table.head(how_many).copy()
-    top['s4_stability']   = top['s4_stability'].fillna(0)
-    top['s2_selectivity'] = top['s2_selectivity'].fillna(0)
-    n = len(top)
-    names = [r[:22] for r in top['OBP']]
-    w = weights
-
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(11.69, 8.27))
-    fig.patch.set_facecolor(C_BG)
-    fig.suptitle(f"Mètode 1 — Pesos Deterministes  |  VOC: {voc_name}",
-                 fontsize=13, fontweight='bold', color=C_HEADER, y=0.98)
-
-    # ── Esquerra: Score total ─────────────────────────────────────────────────
-    ax1.set_facecolor('white')
-    colors = [C_HIGHLIGHT if i == 0 else C_SCORE for i in range(n)]
-    ax1.barh(range(n), top['Score'], color=colors, edgecolor='white', height=0.65)
-    ax1.set_yticks(range(n))
-    ax1.set_yticklabels(names, fontsize=8.5)
-    ax1.invert_yaxis()
-    ax1.set_xlabel('Score final', fontsize=9)
-    ax1.set_title('Ranking — Score total', fontsize=10)
-    ax1.set_xlim(0, 1.12)
-    ax1.axvline(0, color='#cccccc', linewidth=0.5)
-    for i, val in enumerate(top['Score']):
-        ax1.text(val + 0.012, i, f"{val:.4f}", va='center', fontsize=7.5)
-    star_idx = [i for i, p in enumerate(top['Preferred']) if p]
-    for i in star_idx:
-        ax1.text(-0.04, i, '★', va='center', fontsize=9, color='#DAA520')
-
-    # ── Dreta: subscores apilats (contribucions pesades) ─────────────────────
-    ax2.set_facecolor('white')
-    s1c = top['s1_affinity']    * w['w_affinity']
-    s2c = top['s2_selectivity'] * w['w_selectivity']
-    s4c = top['s4_stability']   * w['w_stability']
-    s5c = top['s5_promiscuity'] * w['w_promiscuity']
-    y = range(n)
-    ax2.barh(y, s1c, color=C_S1, label=f's1 afinitat  (w={w["w_affinity"]:.2f})', height=0.65)
-    ax2.barh(y, s2c, left=s1c, color=C_S2,
-             label=f's2 selectivitat  (w={w["w_selectivity"]:.2f})', height=0.65)
-    ax2.barh(y, s4c, left=s1c + s2c, color=C_S4,
-             label=f's4 estabilitat  (w={w["w_stability"]:.2f})', height=0.65)
-    ax2.barh(y, s5c, left=s1c + s2c + s4c, color=C_S5,
-             label=f's5 promiscuïtat  (w={w["w_promiscuity"]:.2f})', height=0.65)
-    ax2.set_yticks(range(n))
-    ax2.set_yticklabels(names, fontsize=8.5)
-    ax2.invert_yaxis()
-    ax2.set_xlabel('Contribució pesada (w × subscore)', fontsize=9)
-    ax2.set_title('Descomposició subscores (apilat)', fontsize=10)
-    ax2.legend(fontsize=7.5, loc='lower right')
-    ax2.set_xlim(0, 1.05)
-
-    plt.tight_layout(rect=[0, 0, 1, 0.95])
-    _save(pdf, fig)
-
-
-# ── Pàgina 3: M1 — Taula detallada ───────────────────────────────────────────
-
-def page_mode1_table(pdf, result_table, voc_name, how_many):
-    top = result_table.head(how_many).copy()
-
-    fig, ax = plt.subplots(figsize=(11.69, 8.27))
-    fig.patch.set_facecolor(C_BG)
-    fig.suptitle(f"Mètode 1 — Taula Detallada  |  VOC: {voc_name}",
-                 fontsize=13, fontweight='bold', color=C_HEADER, y=0.98)
+ 
+    fig = _fig()
+    fig.suptitle(f"SCENTINEL  ·  Detailed results  |  VOC: {voc_name}",
+                 fontsize=14, fontweight='bold', color=C_LILAC_DK, y=0.975)
+ 
+    # ---- main table (glass panel behind) ----
+    _bubble(fig, 0.03, 0.46, 0.94, 0.46, facecolor=C_PANEL, alpha=0.95, pad=0.02)
+    ax = fig.add_axes([0.045, 0.47, 0.91, 0.44])
     ax.axis('off')
-
-    cols = ['#', 'OBP', 'Score', 's1', 's2', 's4', 's5',
-            'Ki (μM)', 'Cys', 'Pref', 'Ki interf', 'Tipus']
+ 
+    cols = ['#', 'OBP', 'Conserv.', 'Conf.', 'c2', 's1', 's2', 's4', 's5',
+            'Ki (uM)', 'Interf', 'Danger', 'Type']
     rows = []
+    tints = []
     for i, (_, row) in enumerate(top.iterrows()):
-        cys = str(int(row['Cystines'])) if not pd.isna(row['Cystines']) else '?'
-        ki_i = (f"{row['Min_Ki_interferent_uM']:.2f}"
-                if not pd.isna(row['Min_Ki_interferent_uM']) else '—')
-        s4_disp = (f"{row['s4_stability']:.3f}"
-                   if not pd.isna(row['s4_stability']) else '?')
+        conf   = _col(row, 'Confidence', 'Confianca')
+        cons   = _col(row, 'Conservative', 'Conservador')
+        c2     = _col(row, 'c2')
+        n_tot  = int(_col(row, 'N_interferents_total', default=0) or 0)
+        n_miss = int(_col(row, 'N_interferents_missing', default=0) or 0)
+        n_dang = int(_col(row, 'N_danger_interferents', default=0) or 0)
+        interf = f"{n_tot - n_miss}/{n_tot}" if n_tot else "-"
+        s4 = _col(row, 's4_stability')
         rows.append([
             str(i + 1),
-            row['OBP'][:20],
-            f"{row['Score']:.4f}",
-            f"{row['s1_affinity']:.3f}",
-            f"{row['s2_selectivity']:.3f}",
-            s4_disp,
-            f"{row['s5_promiscuity']:.3f}",
-            f"{row['Ki_diana_uM']:.2f}",
-            cys,
-            '★' if row['Preferred'] else '',
-            ki_i,
-            str(row['Type'])[:12],
+            str(row['OBP'])[:18],
+            _fmt(cons, 4),
+            _fmt(conf, 2),
+            _fmt(c2, 2),
+            _fmt(row['s1_affinity']),
+            _fmt(row['s2_selectivity']),
+            _fmt(s4) if not pd.isna(s4) else '?',
+            _fmt(row['s5_promiscuity']),
+            _fmt(_col(row, 'Ki_target_uM', 'Ki_diana_uM'), 2),
+            interf,
+            (f"! {n_dang}" if n_dang else "-"),
+            str(row['Type'])[:11],
         ])
-
+        tints.append(_conf_color(conf))
+ 
     tbl = ax.table(cellText=rows, colLabels=cols, loc='center', cellLoc='center')
     tbl.auto_set_font_size(False)
     tbl.set_fontsize(8)
-    tbl.scale(1, 1.45)
-
+    tbl.scale(1, 1.42)
+ 
     for j in range(len(cols)):
-        tbl[0, j].set_facecolor('#4C72B0')
-        tbl[0, j].set_text_props(color='white', fontweight='bold')
-
+        c = tbl[0, j]
+        c.set_facecolor(C_LILAC_DK)
+        c.set_text_props(color='white', fontweight='bold')
+        c.set_edgecolor('white')
+ 
     for i in range(len(rows)):
-        bg = '#EBF2FF' if i % 2 == 0 else 'white'
         for j in range(len(cols)):
-            tbl[i + 1, j].set_facecolor(bg)
-        if rows[i][9] == '★':
-            for j in range(len(cols)):
-                tbl[i + 1, j].set_facecolor('#FFFACD')
-
-    plt.tight_layout(rect=[0, 0, 1, 0.95])
+            cell = tbl[i + 1, j]
+            cell.set_facecolor(tints[i])
+            cell.set_edgecolor('white')
+        # highlight the danger column if there are dangerous interferents
+        if rows[i][11] != '-':
+            tbl[i + 1, 11].set_text_props(color=C_DANGER, fontweight='bold')
+    # top row accent
+    tbl[1, 0].set_text_props(fontweight='bold')
+ 
+    # ---- legend line ----
+    fig.text(0.045, 0.445,
+             "Conserv. = Score x Confidence   ·   c2 = selectivity confidence   ·   "
+             "Interf = measured/total   ·   Danger = vineyard interferents binding "
+             "as strong as the target",
+             ha='left', va='top', fontsize=7.6, color=C_MUTE)
+    fig.text(0.045, 0.428,
+             "Row tint:  green = confidence >= 0.80    lilac = 0.50-0.80    "
+             "pink = < 0.50",
+             ha='left', va='top', fontsize=7.6, color=C_MUTE)
+ 
+    # ---- vineyard interferent detail block (per OBP) ----
+    _bubble(fig, 0.03, 0.06, 0.94, 0.34, facecolor="#FFFFFF", alpha=0.95, pad=0.02)
+    fig.text(0.05, 0.375, "Dangerous vineyard interferents per candidate",
+             ha='left', va='top', fontsize=10.5, fontweight='bold', color=C_DANGER)
+    fig.text(0.05, 0.355,
+             f"(Ki_interf <= Ki_target x {DANGER_INTERFERENT_MARGIN:.2f};  v = binds stronger than the target)",
+             ha='left', va='top', fontsize=8, color=C_MUTE)
+ 
+    y = 0.335
+    any_danger = False
+    line_h = 0.028
+    max_lines = 10
+    shown = 0
+    for i, (_, row) in enumerate(top.iterrows()):
+        perill = _col(row, 'Danger_interferents', default=[])
+        if isinstance(perill, float):  # NaN
+            perill = []
+        if not perill:
+            continue
+        any_danger = True
+        shown += 1
+        if shown > max_lines:
+            fig.text(0.05, y, "...", ha='left', va='top', fontsize=9, color=C_MUTE)
+            break
+        ki_d = _col(row, 'Ki_target_uM', 'Ki_diana_uM')
+        names = MAX_DANGER_NAMES if MAX_DANGER_NAMES is not None else len(perill)
+        labels = []
+        for nom, ki_i in perill[:names]:
+            arrow = "v" if (ki_i < ki_d and not np.isclose(ki_i, ki_d)) else ""
+            labels.append(f"{nom}({ki_i:.1f}{arrow})")
+        extra = f"  +{len(perill) - names}" if (MAX_DANGER_NAMES is not None
+                                                and len(perill) > names) else ""
+        txt = f"{i+1:>2}. {str(row['OBP'])[:16]:<16} Ki={ki_d:>6.2f} [{len(perill)}]  " \
+              + ", ".join(labels) + extra
+        if len(txt) > 120:
+            txt = txt[:117] + "..."
+        fig.text(0.05, y, txt, ha='left', va='top', fontsize=8,
+                 fontfamily='monospace', color=C_INK)
+        y -= line_h
+ 
+    if not any_danger:
+        fig.text(0.05, y, "OK  No candidate in the top has measured vineyard "
+                          "interferents binding as strong as the target.",
+                 ha='left', va='top', fontsize=9, color=C_GREEN_DK)
+ 
     _save(pdf, fig)
-
-
-# ── Pàgina 4: M1 — Taula 1 (selectivitat fiable) / Taula 2 (prometedors) ────
-
-def page_table1_table2(pdf, result_table, voc_name, how_many):
-    """Taula 1: OBPs amb TOTS els interferents mesurats (s2 fiable).
-    Taula 2: OBPs als quals falta ≥1 interferent (s2 descartada, s1+s4+s5).
-    Retorna la Taula 2 ordenada, per construir després la Taula 3 (llista Boltz)."""
-    df_t1 = result_table[result_table['has_all_interferents']].reset_index(drop=True)
-    df_t2 = result_table[~result_table['has_all_interferents']].copy()
-
-    if not df_t2.empty:
-        df_t2 = df_t2.sort_values('Score_sense_s2', ascending=False).reset_index(drop=True)
-
-    if df_t1.empty and df_t2.empty:
-        return df_t2
-
-    n_panels = sum([not df_t1.empty, not df_t2.empty])
-    fig, axes = plt.subplots(1, n_panels, figsize=(11.69, 8.27))
-    fig.patch.set_facecolor(C_BG)
-    fig.suptitle(f"Taula 1 / Taula 2 — Selectivitat fiable vs. prometedors  |  VOC: {voc_name}",
-                 fontsize=13, fontweight='bold', color=C_HEADER, y=0.98)
-    if n_panels == 1:
-        axes = [axes]
-
-    if df_t1.empty:
-        n_interferents_total = (result_table['N_interferents_total'].iloc[0]
-                                 if 'N_interferents_total' in result_table.columns
-                                 and not result_table.empty else 0)
-        if n_interferents_total == 0:
-            msg = "✗ No hi ha dades d'interferents — la selectivitat no es pot avaluar.\nLa Taula 1 no es mostra. Saltem directament a la Taula 2."
-        else:
-            msg = ("✗ Cap OBP té TOTS els interferents mesurats — selectivitat no fiable per a cap "
-                   "candidat.\nLa Taula 1 no es mostra. Saltem directament a la Taula 2.")
-        fig.text(0.5, 0.90, msg, ha='center', va='top', fontsize=9, color='#B33A3A', wrap=True)
-
-    ax_idx = 0
-    if not df_t1.empty:
-        ax = axes[ax_idx]; ax_idx += 1
-        top_e = df_t1.head(how_many)
-        n = len(top_e)
-        ax.set_facecolor('white')
-        ax.barh(range(n), top_e['Score'], color='#4C72B0', edgecolor='white', height=0.65)
-        ax.set_yticks(range(n))
-        ax.set_yticklabels([r[:22] for r in top_e['OBP']], fontsize=8)
-        ax.invert_yaxis()
-        ax.set_xlabel('Score (4 criteris, s2 fiable)', fontsize=9)
-        ax.set_title(f'TAULA 1 — tots els interferents mesurats (top {n})', fontsize=10)
-        for i, val in enumerate(top_e['Score']):
-            ax.text(val + 0.008, i, f"{val:.4f}", va='center', fontsize=7)
-
-    if not df_t2.empty:
-        ax = axes[ax_idx]
-        top_x = df_t2.head(how_many)
-        n = len(top_x)
-        ax.set_facecolor('white')
-        ax.barh(range(n), top_x['Score_sense_s2'], color='#DD8452', edgecolor='white', height=0.65)
-        ax.set_yticks(range(n))
-        ax.set_yticklabels([r[:22] for r in top_x['OBP']], fontsize=8)
-        ax.invert_yaxis()
-        ax.set_xlabel('Score (s1+s4+s5, sense s2)', fontsize=9)
-        ax.set_title(f'TAULA 2 — falta ≥1 interferent (top {n})', fontsize=10)
-        for i, val in enumerate(top_x['Score_sense_s2']):
-            ax.text(val + 0.008, i, f"{val:.4f}", va='center', fontsize=7)
-
-    plt.tight_layout(rect=[0, 0, 1, 0.95])
-    _save(pdf, fig)
-
-    return df_t2
-
-
-# ── Pàgina 5: M1 — Taula 3 (llista de feina Boltz) ───────────────────────────
-
-def page_table3_boltz(pdf, df_table2_sorted, voc_name, max_rows=35):
-    """Llista de parelles OBP/interferent que falten i s'han de calcular,
-    ordenada segons la Taula 2 (primer les dels OBPs més prometedors)."""
-    if df_table2_sorted is None or df_table2_sorted.empty:
+ 
+    # ---- second page: s5 superbinders ----
+    _page_superbinders(pdf, result_table, voc_name, how_many)
+ 
+ 
+def _page_superbinders(pdf, result_table, voc_name, how_many):
+    """s5 superbinders page - VOCs from the whole database each OBP binds strongly.
+    * = Ki <= SUPERBINDER_KI_MAX (strong)   v = binds stronger than the target."""
+    if 'Superbinders' not in result_table.columns:
         return
-
-    pairs = []
-    for _, row in df_table2_sorted.iterrows():
-        for interf in sorted(row['Missing_interferents']):
-            pairs.append((row['OBP'], row['Score_sense_s2'], interf))
-
-    if not pairs:
-        fig = _fig()
-        fig.suptitle(f"Taula 3 — Llista de feina Boltz  |  VOC: {voc_name}",
-                     fontsize=13, fontweight='bold', color=C_HEADER, y=0.92)
-        fig.text(0.5, 0.5,
-                  "✗ No s'han definit interferents — no hi ha cap parella OBP/interferent a calcular.",
-                  ha='center', va='center', fontsize=11, color='#B33A3A')
-        _save(pdf, fig)
-        return
-
-    truncated = len(pairs) > max_rows
-    shown = pairs[:max_rows]
-
-    fig, ax = plt.subplots(figsize=(11.69, 8.27))
-    fig.patch.set_facecolor(C_BG)
-    fig.suptitle(f"Taula 3 — Llista de feina Boltz  |  VOC: {voc_name}",
-                 fontsize=13, fontweight='bold', color=C_HEADER, y=0.98)
-    ax.axis('off')
-
-    cols = ['#', 'OBP', 'Score Taula 2', 'Interferent que falta']
-    rows = [
-        [str(i + 1), obp[:22], f"{score:.4f}", interf[:30]]
-        for i, (obp, score, interf) in enumerate(shown)
-    ]
-
-    tbl = ax.table(cellText=rows, colLabels=cols, loc='center', cellLoc='center')
-    tbl.auto_set_font_size(False)
-    tbl.set_fontsize(8)
-    tbl.scale(1, 1.25)
-
-    for j in range(len(cols)):
-        tbl[0, j].set_facecolor('#4C72B0')
-        tbl[0, j].set_text_props(color='white', fontweight='bold')
-
-    for i in range(len(rows)):
-        bg = '#FFF3E0' if i % 2 == 0 else 'white'
-        for j in range(len(cols)):
-            tbl[i + 1, j].set_facecolor(bg)
-
-    footer = f"Total de parelles OBP/interferent a calcular: {len(pairs)}"
-    if truncated:
-        footer += f"  (es mostren les {max_rows} primeres, prioritzades per la Taula 2)"
-    fig.text(0.5, 0.04, footer, ha='center', fontsize=9, color='#555555')
-
-    plt.tight_layout(rect=[0, 0.06, 1, 0.95])
+ 
+    top = result_table.head(how_many).copy()
+ 
+    fig = _fig()
+    fig.suptitle(f"SCENTINEL  ·  s5 superbinders  |  VOC: {voc_name}",
+                 fontsize=14, fontweight='bold', color=C_LILAC_DK, y=0.975)
+ 
+    _bubble(fig, 0.03, 0.10, 0.94, 0.80, facecolor="#FFFFFF", alpha=0.95, pad=0.02)
+    fig.text(0.05, 0.86, "Superbinders - VOCs (any, not only vineyard) bound strongly",
+             ha='left', va='top', fontsize=11, fontweight='bold', color=C_LILAC_DK)
+    fig.text(0.05, 0.835,
+             f"* = Ki <= {SUPERBINDER_KI_MAX:.1f} uM (strong)    "
+             f"v = binds stronger than the target    [n] = total superbinders",
+             ha='left', va='top', fontsize=8.5, color=C_MUTE)
+ 
+    y = 0.80
+    line_h = 0.032
+    none = True
+    for i, (_, row) in enumerate(top.iterrows()):
+        supers = row['Superbinders']
+        if isinstance(supers, float):   # NaN
+            supers = []
+        if not supers:
+            continue
+        none = False
+        shown = supers if MAX_SUPERBINDER_NAMES is None else supers[:MAX_SUPERBINDER_NAMES]
+        labels = []
+        for name, ki_v, is_strong, beats in shown:
+            mark = ("*" if is_strong else "") + ("v" if beats else "")
+            labels.append(f"{name}({ki_v:.1f}{mark})")
+        extra = (f"  +{len(supers) - MAX_SUPERBINDER_NAMES}"
+                 if (MAX_SUPERBINDER_NAMES is not None
+                     and len(supers) > MAX_SUPERBINDER_NAMES) else "")
+        head = f"{i+1:>2}. {str(row['OBP'])[:16]:<16} [{len(supers)}]  "
+        # Wrap instead of truncating: the page has room and cutting the line
+        # would silently drop the '+N' that says how many are not shown.
+        wrapped = textwrap.wrap(", ".join(labels) + extra,
+                                width=118 - len(head)) or [""]
+        for k, piece in enumerate(wrapped):
+            fig.text(0.05, y, (head if k == 0 else " " * len(head)) + piece,
+                     ha='left', va='top', fontsize=8,
+                     fontfamily='monospace', color=C_INK)
+            y -= line_h
+            if y < 0.12:
+                fig.text(0.05, y, "...", ha='left', va='top', fontsize=9, color=C_MUTE)
+                break
+        if y < 0.12:
+            break
+ 
+    if none:
+        fig.text(0.05, y, "OK  No candidate in the top binds any strong superbinder.",
+                 ha='left', va='top', fontsize=9, color=C_GREEN_DK)
+ 
     _save(pdf, fig)
-
-
-# ── Pàgina opcional: Comparació experimental vs computacional ───────────────
-
-def page_top10_comparison(pdf, experimental_table, predicted_table, voc_name, how_many):
+ 
+ 
+# -- Page: experimental vs computational -------------------------------------
+ 
+def page_exp_vs_comp(pdf, experimental_table, predicted_table, voc_name, how_many):
     exp_top = experimental_table.head(how_many)
     pred_top = predicted_table.head(how_many)
-
-    fig, axes = plt.subplots(1, 2, figsize=(11.69, 8.27))
-    fig.patch.set_facecolor(C_BG)
-    fig.suptitle(
-        f"Top {how_many} candidats — Experimental vs. Computacional  |  VOC: {voc_name}",
-        fontsize=13, fontweight='bold', color=C_HEADER, y=0.98
-    )
-
-    for ax, title, df, color in [
-        (axes[0], "Dades experimentals", exp_top, C_SCORE),
-        (axes[1], "Dades computacionals", pred_top, '#DD8452'),
-    ]:
-        ax.set_facecolor('white')
+ 
+    fig = _fig()
+    fig.suptitle(f"SCENTINEL  ·  Experimental vs Computational  |  VOC: {voc_name}",
+                 fontsize=14, fontweight='bold', color=C_LILAC_DK, y=0.975)
+ 
+    panels = [
+        (0.05, "Experimental data", exp_top, C_GREEN, C_GREEN_LT),
+        (0.53, "Computational data (predicted)", pred_top, C_LILAC, C_LILAC_LT),
+    ]
+    for x0, title, df, color, tint in panels:
+        _bubble(fig, x0, 0.12, 0.42, 0.78, facecolor=tint, alpha=0.5, pad=0.02)
+        ax = fig.add_axes([x0 + 0.05, 0.16, 0.34, 0.66])
+        ax.set_facecolor('none')
         values = df['Score'].tolist()
         names = df['OBP'].str[:20].tolist()
-        ax.barh(range(len(values)), values, color=color, edgecolor='white', height=0.65)
-        ax.set_yticks(range(len(values)))
-        ax.set_yticklabels(names, fontsize=8)
+        n = len(values)
+        bar_colors = [C_GREEN_DK if i == 0 else color for i in range(n)]
+        ax.barh(range(n), values, color=bar_colors, edgecolor='white', height=0.66)
+        ax.set_yticks(range(n))
+        ax.set_yticklabels(names, fontsize=8, color=C_INK)
         ax.invert_yaxis()
-        ax.set_title(title, fontsize=10)
-        ax.set_xlabel('Score final', fontsize=9)
-        xlim = max(max(values) * 1.18, 0.08) if values else 1.0
+        ax.set_title(title, fontsize=10.5, color=C_LILAC_DK, fontweight='bold')
+        ax.set_xlabel('Final score', fontsize=9, color=C_MUTE)
+        xlim = max(max(values) * 1.2, 0.08) if values else 1.0
         ax.set_xlim(0, xlim)
+        for s in ax.spines.values():
+            s.set_visible(False)
+        ax.tick_params(length=0)
         for i, val in enumerate(values):
-            ax.text(val + xlim * 0.01, i, f"{val:.4f}", va='center', fontsize=7)
-
-    plt.tight_layout(rect=[0, 0, 1, 0.94])
+            ax.text(val + xlim * 0.01, i, f"{val:.4f}", va='center',
+                    fontsize=7, color=C_INK)
+ 
     _save(pdf, fig)
-
-
+ 
+ 
 def page_missing_predicted(pdf, voc_name, message):
     fig = _fig()
-    fig.suptitle(f"Rànquing computacional no disponible  |  VOC: {voc_name}",
-                 fontsize=13, fontweight='bold', color=C_HEADER, y=0.92)
-    fig.text(0.5, 0.58, message,
-             ha='center', va='center', fontsize=11, color='#B33A3A', wrap=True)
+    _bubble(fig, 0.1, 0.35, 0.8, 0.3, facecolor="#F6E1EC", alpha=0.7)
+    fig.suptitle(f"Computational ranking not available  |  VOC: {voc_name}",
+                 fontsize=13, fontweight='bold', color=C_LILAC_DK, y=0.7)
+    fig.text(0.5, 0.5, message, ha='center', va='center', fontsize=11,
+             color=C_DANGER, wrap=True)
     _save(pdf, fig)
-
-
-# ── Pàgines 5/6: SMAA ────────────────────────────────────────────────────────
-
+ 
+ 
+# -- SMAA page ---------------------------------------------------------------
+ 
 def page_smaa(pdf, result_table, rank_accept, central_w, voc_name, how_many, mode_label):
     m = len(result_table)
     n_rank_cols = min(m, 5)
@@ -400,60 +465,62 @@ def page_smaa(pdf, result_table, rank_accept, central_w, voc_name, how_many, mod
     top_idx = order[:how_many]
     names   = [result_table.iloc[i]['OBP'][:22] for i in top_idx]
     p_best  = rank_accept[top_idx, 0]
-
+ 
     has_cw = central_w is not None and any(central_w.get(i) is not None for i in top_idx)
-
-    fig = plt.figure(figsize=(11.69, 8.27))
-    fig.patch.set_facecolor(C_BG)
-    fig.suptitle(f"{mode_label}  |  VOC: {voc_name}",
-                 fontsize=13, fontweight='bold', color=C_HEADER, y=0.98)
-
+ 
+    fig = _fig()
+    fig.suptitle(f"SCENTINEL  ·  {mode_label}  |  VOC: {voc_name}",
+                 fontsize=14, fontweight='bold', color=C_LILAC_DK, y=0.975)
+ 
     if has_cw:
-        gs = gridspec.GridSpec(2, 2, figure=fig, hspace=0.5, wspace=0.38)
+        gs = gridspec.GridSpec(2, 2, figure=fig, hspace=0.55, wspace=0.4,
+                               left=0.08, right=0.95, top=0.9, bottom=0.1)
         ax_bar  = fig.add_subplot(gs[0, 0])
         ax_heat = fig.add_subplot(gs[0, 1])
         ax_cw   = fig.add_subplot(gs[1, :])
     else:
-        gs = gridspec.GridSpec(1, 2, figure=fig, hspace=0.4, wspace=0.38)
+        gs = gridspec.GridSpec(1, 2, figure=fig, wspace=0.4,
+                               left=0.08, right=0.95, top=0.85, bottom=0.15)
         ax_bar  = fig.add_subplot(gs[0, 0])
         ax_heat = fig.add_subplot(gs[0, 1])
         ax_cw   = None
-
-    # ── Bar chart p(rang 1) ──
-    ax_bar.set_facecolor('white')
-    bar_colors = [C_HIGHLIGHT if i == 0 else C_SCORE for i in range(len(top_idx))]
-    ax_bar.barh(range(len(top_idx)), p_best, color=bar_colors,
-                edgecolor='white', height=0.65)
+ 
+    # bar p(rank 1)
+    ax_bar.set_facecolor('none')
+    bar_colors = [C_GREEN_DK if i == 0 else C_LILAC for i in range(len(top_idx))]
+    ax_bar.barh(range(len(top_idx)), p_best, color=bar_colors, edgecolor='white', height=0.66)
     ax_bar.set_yticks(range(len(top_idx)))
-    ax_bar.set_yticklabels(names, fontsize=8.5)
+    ax_bar.set_yticklabels(names, fontsize=8.5, color=C_INK)
     ax_bar.invert_yaxis()
-    ax_bar.set_xlabel('p(rang 1)', fontsize=9)
-    ax_bar.set_title('Probabilitat de ser el millor', fontsize=10)
-    xlim = max(p_best.max() * 1.18, 0.08)
+    ax_bar.set_xlabel('p(rank 1)', fontsize=9, color=C_MUTE)
+    ax_bar.set_title('Probability of being the best', fontsize=10.5, color=C_LILAC_DK)
+    xlim = max(p_best.max() * 1.2, 0.08)
     ax_bar.set_xlim(0, xlim)
+    for s in ax_bar.spines.values():
+        s.set_visible(False)
+    ax_bar.tick_params(length=0)
     for i, val in enumerate(p_best):
-        ax_bar.text(val + xlim * 0.01, i, f"{val:.3f}", va='center', fontsize=7.5)
-
-    # ── Heatmap d'acceptació ──
+        ax_bar.text(val + xlim * 0.01, i, f"{val:.3f}", va='center', fontsize=7.5, color=C_INK)
+ 
+    # heatmap
     heat_data = rank_accept[top_idx, :n_rank_cols]
-    im = ax_heat.imshow(heat_data, aspect='auto', cmap='Blues', vmin=0, vmax=1)
+    im = ax_heat.imshow(heat_data, aspect='auto', cmap=CMAP_SCENTINEL, vmin=0, vmax=1)
     ax_heat.set_xticks(range(n_rank_cols))
-    ax_heat.set_xticklabels([f"Rang {i+1}" for i in range(n_rank_cols)], fontsize=8)
+    ax_heat.set_xticklabels([f"Rank {i+1}" for i in range(n_rank_cols)], fontsize=8, color=C_INK)
     ax_heat.set_yticks(range(len(top_idx)))
-    ax_heat.set_yticklabels(names, fontsize=8.5)
-    ax_heat.set_title("Matriu d'acceptació de rangs", fontsize=10)
+    ax_heat.set_yticklabels(names, fontsize=8.5, color=C_INK)
+    ax_heat.set_title("Rank acceptability", fontsize=10.5, color=C_LILAC_DK)
     plt.colorbar(im, ax=ax_heat, fraction=0.046, pad=0.04)
     for i in range(len(top_idx)):
         for j in range(n_rank_cols):
             val = heat_data[i, j]
-            txt_color = 'white' if val > 0.55 else 'black'
             ax_heat.text(j, i, f"{val:.2f}", ha='center', va='center',
-                         fontsize=7, color=txt_color)
-
-    # ── Central weights (mode 3) ──
+                         fontsize=7, color='white' if val > 0.55 else C_INK)
+ 
+    # central weights
     if has_cw and ax_cw is not None:
-        ax_cw.set_facecolor('white')
-        cw_labels = ['s1 Afinitat', 's2 Selectivitat', 's4 Estabilitat', 's5 Promiscuïtat']
+        ax_cw.set_facecolor('none')
+        cw_labels = ['s1 Affinity', 's2 Selectivity', 's4 Stability', 's5 Promiscuity']
         cw_colors = [C_S1, C_S2, C_S4, C_S5]
         x = np.arange(len(top_idx))
         width = 0.2
@@ -464,140 +531,154 @@ def page_smaa(pdf, result_table, rank_accept, central_w, voc_name, how_many, mod
                 vals.append(float(cw[ci]) if cw is not None else 0.0)
             ax_cw.bar(x + ci * width, vals, width, label=label, color=color)
         ax_cw.set_xticks(x + 1.5 * width)
-        ax_cw.set_xticklabels(names, rotation=28, ha='right', fontsize=8)
-        ax_cw.set_ylabel('Pes central', fontsize=9)
-        ax_cw.set_title('Perfil de pesos en els quals cada OBP guanya', fontsize=10)
+        ax_cw.set_xticklabels(names, rotation=28, ha='right', fontsize=8, color=C_INK)
+        ax_cw.set_ylabel('Central weight', fontsize=9, color=C_MUTE)
+        ax_cw.set_title('Weight profile in which each OBP wins', fontsize=10.5, color=C_LILAC_DK)
         ax_cw.legend(fontsize=7.5, ncol=4)
         ax_cw.set_ylim(0, 1)
-
-    plt.tight_layout(rect=[0, 0, 1, 0.94])
+        for s in ax_cw.spines.values():
+            s.set_visible(False)
+ 
     _save(pdf, fig)
-
-
-# ── Pàgina final: Comparació 3 mètodes ───────────────────────────────────────
-
+ 
+ 
+# -- Comparison of the 3 methods + who wins ----------------------------------
+ 
 def page_comparison(pdf, result_table, rank_accept_d, rank_accept_s, voc_name, how_many):
     top_det = result_table.head(how_many)
     order_d = np.argsort(-rank_accept_d[:, 0])
     order_s = np.argsort(-rank_accept_s[:, 0])
-
-    fig, axes = plt.subplots(1, 3, figsize=(11.69, 8.27))
-    fig.patch.set_facecolor(C_BG)
-    fig.suptitle(f"Comparació dels 3 Mètodes  |  VOC: {voc_name}",
-                 fontsize=13, fontweight='bold', color=C_HEADER, y=0.98)
-
+ 
+    fig = _fig()
+    fig.suptitle(f"SCENTINEL  ·  Comparison of the 3 methods  |  VOC: {voc_name}",
+                 fontsize=14, fontweight='bold', color=C_LILAC_DK, y=0.975)
+ 
     datasets = [
-        ("M1: Pesos Deterministes\n(Score final)",
-         top_det['OBP'].str[:22].tolist(),
+        (0.04, "M1: Deterministic\n(final Score)",
+         top_det['OBP'].str[:20].tolist(),
          top_det['Score'].tolist(),
-         C_SCORE),
-        ("M2: Perturbació\np(rang 1)",
-         [result_table.iloc[i]['OBP'][:22] for i in order_d[:how_many]],
+         C_LILAC, C_LILAC_LT),
+        (0.36, "M2: Perturbation\np(rank 1)",
+         [result_table.iloc[i]['OBP'][:20] for i in order_d[:how_many]],
          [rank_accept_d[i, 0] for i in order_d[:how_many]],
-         '#4C72B0'),
-        ("M3: SMAA Pur\np(rang 1)",
-         [result_table.iloc[i]['OBP'][:22] for i in order_s[:how_many]],
+         C_S1, "#E3EAFB"),
+        (0.68, "M3: Pure SMAA\np(rank 1)",
+         [result_table.iloc[i]['OBP'][:20] for i in order_s[:how_many]],
          [rank_accept_s[i, 0] for i in order_s[:how_many]],
-         '#55A868'),
+         C_GREEN, C_GREEN_LT),
     ]
-
-    for ax, (title, names, vals, col) in zip(axes, datasets):
+ 
+    for x0, title, names, vals, col, tint in datasets:
+        _bubble(fig, x0, 0.12, 0.29, 0.76, facecolor=tint, alpha=0.5, pad=0.02)
+        ax = fig.add_axes([x0 + 0.035, 0.17, 0.23, 0.6])
+        ax.set_facecolor('none')
         n = len(names)
-        ax.set_facecolor('white')
-        bar_colors = [C_HIGHLIGHT if i == 0 else col for i in range(n)]
-        ax.barh(range(n), vals, color=bar_colors, edgecolor='white', height=0.65)
+        bar_colors = [C_GREEN_DK if i == 0 else col for i in range(n)]
+        ax.barh(range(n), vals, color=bar_colors, edgecolor='white', height=0.66)
         ax.set_yticks(range(n))
-        ax.set_yticklabels(names, fontsize=8)
+        ax.set_yticklabels(names, fontsize=7.5, color=C_INK)
         ax.invert_yaxis()
-        ax.set_title(title, fontsize=10)
-        xlim = max(max(vals) * 1.18, 0.08) if vals else 1.0
+        ax.set_title(title, fontsize=10, color=C_LILAC_DK, fontweight='bold')
+        xlim = max(max(vals) * 1.22, 0.08) if vals else 1.0
         ax.set_xlim(0, xlim)
+        for s in ax.spines.values():
+            s.set_visible(False)
+        ax.tick_params(length=0)
         for i, v in enumerate(vals):
-            ax.text(v + xlim * 0.01, i, f"{v:.3f}", va='center', fontsize=7)
-
-    plt.tight_layout(rect=[0, 0, 1, 0.95])
+            ax.text(v + xlim * 0.01, i, f"{v:.3f}", va='center', fontsize=6.8, color=C_INK)
+ 
+    # who-wins note
+    winner_m1 = top_det.iloc[0]['OBP'] if len(top_det) else "-"
+    winner_m2 = result_table.iloc[order_d[0]]['OBP'] if len(order_d) else "-"
+    winner_m3 = result_table.iloc[order_s[0]]['OBP'] if len(order_s) else "-"
+    note = (f"Winner  ·  M1 (deterministic): {winner_m1}    "
+            f"M2 (perturbation): {winner_m2}    M3 (pure SMAA): {winner_m3}")
+    _bubble(fig, 0.08, 0.03, 0.84, 0.06, facecolor="#FFFFFF", alpha=0.92)
+    fig.text(0.5, 0.06, note, ha='center', va='center', fontsize=9,
+             color=C_INK, fontweight='bold')
+ 
     _save(pdf, fig)
-
-
-# ── Main ──────────────────────────────────────────────────────────────────────
-
+ 
+ 
+# -- Main --------------------------------------------------------------------
+ 
 def main():
-    print("OBP FINDER — Generació d'Informe PDF | iGEM URV 2025")
-    print("Executa els 3 mètodes i genera un informe gràfic descarregable.\n")
-
+    print("SCENTINEL - PDF Report Generation | iGEM URV 2025")
+    print("Runs the 3 methods and generates a downloadable graphical report.\n")
+ 
     exp_binding_file = resolve_data_file(BINDING_FILE_EXPERIMENTAL)
     info_file = resolve_data_file(INFO_FILE)
-
+ 
     for csv_path in (exp_binding_file, info_file):
         if not os.path.isfile(csv_path):
-            print(f"ERROR: No es troba '{csv_path}'.")
+            print(f"ERROR: Cannot find '{csv_path}'.")
             sys.exit(1)
-
+ 
     (binding_table, obp_info_table, cas_col, name_col,
      obp_name_list, LITERATURE_MIN, LITERATURE_MAX) = load_csv_files(exp_binding_file, info_file)
-
-    # ── VOC diana ─────────────────────────────────────────────────────────────
-    print("Cerca el VOC diana pel nom o CAS (ex: 3391-86-4):")
+ 
+    # -- Target VOC ----------------------------------------------------------
+    print("Search the target VOC by name or CAS (e.g. 3391-86-4):")
     while True:
-        user_query = input("Nom o CAS del VOC diana: ").strip()
+        user_query = input("Name or CAS of the target VOC: ").strip()
         if not user_query:
-            print("  Cal escriure alguna cosa.")
+            print("  You must type something.")
             continue
-        chosen_voc = validar_voc(binding_table, name_col, cas_col, user_query)
+        chosen_voc = validate_voc(binding_table, name_col, cas_col, user_query)
         if chosen_voc is None:
-            print("  Torna-ho a intentar.")
+            print("  Try again.")
             continue
-        print(f"\n  VOC seleccionat: {chosen_voc[name_col]}  (CAS: {chosen_voc[cas_col]})")
+        print(f"\n  Selected VOC: {chosen_voc[name_col]}  (CAS: {chosen_voc[cas_col]})")
         break
-
+ 
     voc_display   = chosen_voc[name_col]
     voc_cas       = str(chosen_voc[cas_col])
     voc_name_safe = re.sub(r'[^\w]+', '_', voc_display)[:40]
-    ki_values_diana = pd.Series({col: chosen_voc[col] for col in obp_name_list})
-
-    # ── Interferents ──────────────────────────────────────────────────────────
-    print("\nFitxer d'interferents (noms o CAS, un per línia):")
+    ki_values_target = pd.Series({col: chosen_voc[col] for col in obp_name_list})
+ 
+    # -- Interferents --------------------------------------------------------
+    print("\nInterferent file (names or CAS, one per line):")
     interferent_list = []
     while True:
-        interf_path = input("Fitxer d'interferents (buit per saltar): ").strip().strip('"').strip("'")
+        interf_path = input("Interferent file (leave empty to skip): ").strip().strip('"').strip("'")
         if not interf_path:
-            print("  → Continuem sense interferents.")
+            print("  -> Continuing without interferents.")
             break
         if os.path.isfile(interf_path):
             interferent_list = read_interferent_file(interf_path)
             print(f"  {len(interferent_list)} interferents: {interferent_list}")
-            interferent_list = validar_llista_interferents(
+            interferent_list = validate_interferent_list(
                 interferent_list, binding_table, name_col, cas_col, interf_path
             )
-            print(f"  ✓ {len(interferent_list)} vàlids")
+            print(f"  ok {len(interferent_list)} valid")
             break
-        print(f"  ✗ '{interf_path}' no trobat. Torna-ho a intentar o deixa buit.")
-
-    # ── Pesos i tau ───────────────────────────────────────────────────────────
+        print(f"  x '{interf_path}' not found. Try again or leave empty.")
+ 
+    # -- Weights and tau -----------------------------------------------------
     weights = ask_user_for_weights()
     tau     = ask_user_for_tau()
-
-    top_input = input("\nQuants candidats vols veure? [per defecte: 10]: ").strip()
+ 
+    top_input = input("\nHow many candidates do you want to see? [default: 10]: ").strip()
     how_many  = int(top_input) if top_input.isdigit() and int(top_input) > 0 else 10
-
-    # ── Paràmetres SMAA ───────────────────────────────────────────────────────
-    print("\n── Configuració SMAA (Mètode 2: pesos aleatoris al voltant del valor introduït) ──────────────────────────")
-    c_raw = input("  Dispersió c% per a la Perturbació [per defecte 50]: ").strip()
+ 
+    # -- SMAA parameters -----------------------------------------------------
+    print("\n-- SMAA configuration (Method 2: random weights around the value you entered) --")
+    c_raw = input("  Dispersion c% for the Perturbation [default 50]: ").strip()
     try:
         c_val = float(c_raw)
         if not (0.1 <= c_val <= 100):
             raise ValueError
     except ValueError:
         c_val = 50.0
-        print(f"  → Usant c={c_val:.0f}%")
-
-    n_raw  = input("  Iteracions SMAA [per defecte 100000]: ").strip()
+        print(f"  -> Using c={c_val:.0f}%")
+ 
+    n_raw  = input("  SMAA iterations [default 100000]: ").strip()
     n_iter = int(n_raw) if n_raw.isdigit() and int(n_raw) > 0 else 100_000
-
-    # ── Ranking base ──────────────────────────────────────────────────────────
-    print("\nCalculant ranking...")
+ 
+    # -- Base ranking --------------------------------------------------------
+    print("\nComputing ranking...")
     result_table = build_obp_ranking(
-        ki_values_diana=ki_values_diana,
+        ki_values_target=ki_values_target,
         obp_info_table=obp_info_table,
         binding_table=binding_table,
         cas_col=cas_col, name_col=name_col,
@@ -607,77 +688,86 @@ def main():
         ki_min_matrix=LITERATURE_MIN,
         ki_max_matrix=LITERATURE_MAX,
         tau=tau,
+        target_name=voc_display,
     )
-
+ 
     if result_table.empty:
-        print("  Cap OBP té dades per a aquest VOC.")
+        print("  No OBP has data for this VOC.")
         sys.exit(0)
-
+ 
     how_many = min(how_many, len(result_table))
-
-    pesos_base_list = [
+ 
+    # -- Confidence (adds Confidence / c2 / Conservative / Danger cols) ------
+    diag_c1 = cf.load_diag_c1(resolve_data_file(os.path.join("results", "tanimoto_diag_table.csv")))
+    result_table = cf.compute_confidences(
+        result_table, weights,
+        target_row_idx=chosen_voc.name,
+        interferent_row_idx=result_table.attrs.get('interferent_row_idx', {}),
+        diag_c1=diag_c1,
+        is_predicted=False,
+    )
+ 
+    base_weights_list = [
         weights['w_affinity'], weights['w_selectivity'],
         weights['w_stability'], weights['w_promiscuity'],
     ]
     subscores = result_table[['s1_affinity', 's2_selectivity',
                                's4_stability', 's5_promiscuity']].values
-    te_dada = np.column_stack([
+    has_data = np.column_stack([
         np.ones(len(result_table), dtype=bool),
         result_table['has_s2_data'].values,
         np.ones(len(result_table), dtype=bool),
         result_table['has_s5_data'].values,
     ])
-
-    # ── Mode 2: Perturbació de pesos ────────────────────────────────────────────
-    print(f"\nExecutant Mètode 2 — Perturbació de pesos ({n_iter:,} iter, c={c_val:.0f}%)...")
-    rank_accept_d, _, _ = smaa_complet(
-        subscores=subscores, te_dada=te_dada,
-        n_iter=n_iter, pesos_base=pesos_base_list, c=c_val,
-        mode="perturbacio", seed=42,
+ 
+    print(f"\nRunning Method 2 - weight perturbation ({n_iter:,} iter, c={c_val:.0f}%)...")
+    rank_accept_d, _, _ = smaa_full(
+        subscores=subscores, has_data=has_data,
+        n_iter=n_iter, base_weights=base_weights_list, c=c_val,
+        mode="perturbation", seed=42,
     )
-
-    # ── Mode 3: SMAA pur ──────────────────────────────────────────────────────
-    print(f"Executant Mètode 3 — SMAA pur ({n_iter:,} iter)...")
-    rank_accept_s, _, central_w = smaa_complet(
-        subscores=subscores, te_dada=te_dada,
+ 
+    print(f"Running Method 3 - pure SMAA ({n_iter:,} iter)...")
+    rank_accept_s, _, central_w = smaa_full(
+        subscores=subscores, has_data=has_data,
         n_iter=n_iter, mode="smaa", seed=42,
     )
-
-    # ── Generar PDF ───────────────────────────────────────────────────────────
+ 
+    # -- Predicted (computational) ranking -----------------------------------
     now       = datetime.datetime.now()
     ts_file   = now.strftime("%Y-%m-%d_%H-%M-%S")
     ts_human  = now.strftime("%d/%m/%Y %H:%M:%S")
-    pdf_name  = f"informe_OBP_{voc_name_safe}_{ts_file}.pdf"
+    pdf_name  = f"SCENTINEL_report_{voc_name_safe}_{ts_file}.pdf"
     pdf_path  = os.path.join(os.getcwd(), pdf_name)
-
-    print(f"\nGenerant informe PDF: {pdf_name}")
-
+ 
+    print(f"\nGenerating PDF report: {pdf_name}")
+ 
     have_predicted_page = False
     predicted_result_table = None
     predicted_text = None
-
+ 
     predicted_binding_file = resolve_data_file(BINDING_FILE_PREDICTED)
     predicted_affinity_file = resolve_data_file(BINDING_FILE_PREDICTED_AFFINITY)
     if os.path.isfile(predicted_binding_file) and os.path.isfile(predicted_affinity_file):
-        print(f"\nGenerant també rànquing computacional amb dades predites...")
+        print("Also generating the computational ranking with predicted data...")
         pred_binding_table, _, _, _, _, _, _ = load_csv_files(predicted_binding_file, info_file)
         affinity_binding_table, _, _, _, _, _, _ = load_csv_files(predicted_affinity_file, info_file)
-
-        chosen_voc_pred = validar_voc(pred_binding_table, name_col, cas_col, voc_cas)
-        chosen_voc_aff = validar_voc(affinity_binding_table, name_col, cas_col, voc_cas)
-
+ 
+        chosen_voc_pred = validate_voc(pred_binding_table, name_col, cas_col, voc_cas)
+        chosen_voc_aff = validate_voc(affinity_binding_table, name_col, cas_col, voc_cas)
+ 
         if chosen_voc_pred is not None:
-            ki_values_diana_pred = pd.Series({col: chosen_voc_pred[col] for col in obp_name_list})
+            ki_values_target_pred = pd.Series({col: chosen_voc_pred[col] for col in obp_name_list})
         else:
-            ki_values_diana_pred = pd.Series({col: chosen_voc[col] for col in obp_name_list})
-
-        ki_values_diana_affinity_pred = None
+            ki_values_target_pred = pd.Series({col: chosen_voc[col] for col in obp_name_list})
+ 
+        ki_values_target_affinity_pred = None
         if chosen_voc_aff is not None:
-            ki_values_diana_affinity_pred = pd.Series({col: chosen_voc_aff[col] for col in obp_name_list})
-
-        experimental_ki_values_diana = pd.Series({col: chosen_voc[col] for col in obp_name_list})
+            ki_values_target_affinity_pred = pd.Series({col: chosen_voc_aff[col] for col in obp_name_list})
+ 
+        experimental_ki_values_target = pd.Series({col: chosen_voc[col] for col in obp_name_list})
         predicted_result_table = build_obp_ranking(
-            ki_values_diana=ki_values_diana_pred,
+            ki_values_target=ki_values_target_pred,
             obp_info_table=obp_info_table,
             binding_table=pred_binding_table,
             cas_col=cas_col, name_col=name_col,
@@ -687,56 +777,44 @@ def main():
             ki_min_matrix=LITERATURE_MIN,
             ki_max_matrix=LITERATURE_MAX,
             tau=tau,
-            experimental_ki_values_diana=experimental_ki_values_diana,
+            experimental_ki_values_target=experimental_ki_values_target,
             binding_source_label="predicted",
-            ki_values_diana_affinity=ki_values_diana_affinity_pred,
+            ki_values_target_affinity=ki_values_target_affinity_pred,
+            target_name=voc_display,
         )
-
+ 
         if not predicted_result_table.empty:
             have_predicted_page = True
         else:
-            predicted_text = (
-                "✗ No s'ha pogut generar el rànquing predit. "
-                "Revisa els fitxers de dades i torna-ho a executar."
-            )
+            predicted_text = ("x Could not generate the predicted ranking. "
+                              "Check the data files and run it again.")
     else:
-        predicted_text = (
-            "✗ Fitxers de dades computacionals no disponibles: "
-            f"{BINDING_FILE_PREDICTED} / {BINDING_FILE_PREDICTED_AFFINITY}."
-        )
-
+        predicted_text = ("x Computational data files not available: "
+                          f"{BINDING_FILE_PREDICTED} / {BINDING_FILE_PREDICTED_AFFINITY}.")
+ 
+    # -- Build the PDF -------------------------------------------------------
     with PdfPages(pdf_path) as pdf:
         page_cover(pdf, voc_display, voc_cas, weights, tau, how_many,
                    interferent_list, n_iter, c_val, ts_human)
-
-        page_mode1_chart(pdf, result_table, voc_display, weights, how_many)
-        page_mode1_table(pdf, result_table, voc_display, how_many)
-
+ 
+        page_detailed_table(pdf, result_table, voc_display, how_many)
+ 
         if have_predicted_page:
-            page_top10_comparison(pdf, result_table, predicted_result_table,
-                                  voc_display, how_many)
+            page_exp_vs_comp(pdf, result_table, predicted_result_table,
+                             voc_display, how_many)
         elif predicted_text is not None:
             page_missing_predicted(pdf, voc_display, predicted_text)
-
-        has_incomplete_data = (~result_table['has_all_interferents']).any()
-        n_extra_pages = 0
-        if has_incomplete_data:
-            df_table2 = page_table1_table2(pdf, result_table, voc_display, how_many)
-            page_table3_boltz(pdf, df_table2, voc_display)
-            n_extra_pages = 2
-
+ 
         page_smaa(pdf, result_table, rank_accept_d, None,
-                  voc_display, how_many, "Mètode 2 — Perturbació de pesos")
-
+                  voc_display, how_many, "Method 2 - Weight Perturbation")
         page_smaa(pdf, result_table, rank_accept_s, central_w,
-                  voc_display, how_many, "Mètode 3 — SMAA Pur")
-
+                  voc_display, how_many, "Method 3 - Pure SMAA")
+ 
         page_comparison(pdf, result_table, rank_accept_d, rank_accept_s,
                         voc_display, how_many)
-
-    n_pages = 6 + n_extra_pages + (1 if have_predicted_page or predicted_text is not None else 0)
-    print(f"\n✓ Informe guardat ({n_pages} pàgines): {pdf_path}")
-
-
+ 
+    print(f"\nOK Report saved: {pdf_path}")
+ 
+ 
 if __name__ == '__main__':
     main()
