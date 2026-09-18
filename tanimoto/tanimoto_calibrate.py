@@ -27,7 +27,7 @@ P_VALUES     = [1.0, 2.0]                 # exponent for similarity-based weight
 # LOO) to be eligible as the "best" one. Without this floor, plain RMSE
 # minimization tends to pick a high t_min that fits its (small) covered
 # subset slightly better while leaving most of the matrix unfillable.
-MIN_COBERTURA = 0.60
+MIN_COVERAGE = 0.60
 
 os.makedirs("results", exist_ok=True)
 
@@ -80,7 +80,7 @@ def significance_test(df_err, n_permutations=1000, seed=42):
 
     return {
         'rho_real': rho_real,
-        'pval_parametric': pval_real,  # p-valor de scipy
+        'pval_parametric': pval_real,  # p-value from scipy
         'pval_bootstrap': p_value,
         'rho_mean_random': rho_mean_random,
         'rho_std_random': rho_std_random,
@@ -107,27 +107,27 @@ def plot_significance_test(sig_results, output_path="results/significance_test.p
     # Histogram of the null distribution
     n, bins, patches = ax1.hist(random_rhos, bins=50, alpha=0.7,
                                 color='#94a3b8', edgecolor='black', linewidth=0.5,
-                                label=f'Distribució aleatòria\n(n={sig_results["n_permutations"]})')
+                                label=f'Random distribution\n(n={sig_results["n_permutations"]})')
 
     # Vertical line marking the observed (real) correlation
     ax1.axvline(x=rho_real, color='#2563eb', linewidth=2.5,
-                label=f'ρ real = {rho_real:.3f}')
+                label=f'observed rho = {rho_real:.3f}')
 
     # 95% confidence interval for chance correlations
     ax1.axvline(x=sig_results['ci_95_lower'], color='red', linestyle='--',
-                linewidth=1.5, alpha=0.7, label=f'IC 95% aleatori: [{sig_results["ci_95_lower"]:.3f}, {sig_results["ci_95_upper"]:.3f}]')
+                linewidth=1.5, alpha=0.7, label=f'random 95% CI: [{sig_results["ci_95_lower"]:.3f}, {sig_results["ci_95_upper"]:.3f}]')
     ax1.axvline(x=sig_results['ci_95_upper'], color='red', linestyle='--',
                 linewidth=1.5, alpha=0.7)
 
     # Shade the 95% CI region
     ax1.axvspan(sig_results['ci_95_lower'], sig_results['ci_95_upper'],
-                alpha=0.15, color='red', label='IC 95% aleatori')
+                alpha=0.15, color='red', label='random 95% CI')
 
-    ax1.set_xlabel('Spearman ρ (correlació)', fontsize=12)
-    ax1.set_ylabel('Freqüència', fontsize=12)
-    ax1.set_title(f"Test de significància de Spearman\n"
-                  f"p-valor = {sig_results['pval_bootstrap']:.4f} "
-                  f"({sig_results['n_predictions']} prediccions)", fontsize=13)
+    ax1.set_xlabel('Spearman rho (correlation)', fontsize=12)
+    ax1.set_ylabel('Frequency', fontsize=12)
+    ax1.set_title(f"Spearman significance test\n"
+                  f"p-value = {sig_results['pval_bootstrap']:.4f} "
+                  f"({sig_results['n_predictions']} predictions)", fontsize=13)
     ax1.legend(loc='upper left', fontsize=10)
     ax1.grid(True, alpha=0.3)
 
@@ -143,26 +143,26 @@ def plot_significance_test(sig_results, output_path="results/significance_test.p
             max(df_err["real_pki"].max(), df_err["pred_pki"].max()),
         ]
         ax2.plot(lims, lims, color="gray", linestyle="--", linewidth=1.5,
-                label="Predicció perfecta")
+                label="Perfect prediction")
 
-        # Anotar estadístics
-        stats_text = (f"Spearman ρ = {sig_results['rho_real']:.3f}\n"
-                     f"p-valor = {sig_results['pval_bootstrap']:.4f}\n"
+        # Annotate the statistics
+        stats_text = (f"Spearman rho = {sig_results['rho_real']:.3f}\n"
+                     f"p-value = {sig_results['pval_bootstrap']:.4f}\n"
                      f"n = {len(df_err)}")
         ax2.text(0.05, 0.95, stats_text, transform=ax2.transAxes,
                 fontsize=11, verticalalignment='top',
                 bbox=dict(boxstyle='round', facecolor='white', alpha=0.8))
 
-        ax2.set_xlabel("pKi real (experimental)", fontsize=12)
-        ax2.set_ylabel("pKi predit (Tanimoto read-across)", fontsize=12)
-        ax2.set_title("Predicció vs Real (LOO)", fontsize=13)
+        ax2.set_xlabel("Real pKi (experimental)", fontsize=12)
+        ax2.set_ylabel("Predicted pKi (Tanimoto read-across)", fontsize=12)
+        ax2.set_title("Predicted vs Real (LOO)", fontsize=13)
         ax2.legend(loc='lower right', fontsize=10)
         ax2.grid(True, alpha=0.3)
 
     plt.tight_layout()
     plt.savefig(output_path, dpi=200, bbox_inches='tight')
     plt.close()
-    print(f"  ✓ Gràfica de significància guardada a {output_path}")
+    print(f"  OK Significance plot saved to {output_path}")
 
 
 def interpret_significance(sig_results):
@@ -170,70 +170,70 @@ def interpret_significance(sig_results):
     Print a human-readable interpretation of the significance test results.
     """
     print("\n" + "=" * 70)
-    print("  TEST DE SIGNIFICÀNCIA DE SPEARMAN")
+    print("  SPEARMAN SIGNIFICANCE TEST")
     print("=" * 70)
 
     rho = sig_results['rho_real']
     pval = sig_results['pval_bootstrap']
     n = sig_results['n_predictions']
 
-    print(f"\n  Correlació de Spearman observada: ρ = {rho:.4f}")
-    print(f"  P-valor (bootstrap, n_perm={sig_results['n_permutations']}): {pval:.4f}")
-    print(f"  Nombre de prediccions: {n}")
+    print(f"\n  Observed Spearman correlation: rho = {rho:.4f}")
+    print(f"  P-value (bootstrap, n_perm={sig_results['n_permutations']}): {pval:.4f}")
+    print(f"  Number of predictions: {n}")
 
-    # Distribució aleatòria
-    print(f"\n  Distribució per atzar (mitjana): {sig_results['rho_mean_random']:.4f} ± {sig_results['rho_std_random']:.4f}")
-    print(f"  IC 95% per atzar: [{sig_results['ci_95_lower']:.4f}, {sig_results['ci_95_upper']:.4f}]")
+    # Null (random) distribution
+    print(f"\n  Distribution by chance (mean): {sig_results['rho_mean_random']:.4f} +/- {sig_results['rho_std_random']:.4f}")
+    print(f"  95% CI by chance: [{sig_results['ci_95_lower']:.4f}, {sig_results['ci_95_upper']:.4f}]")
 
-    # Interpretació
-    print("\n  INTERPRETACIÓ:")
+    # Interpretation
+    print("\n  INTERPRETATION:")
 
     if rho > 0.5 and pval < 0.05:
-        print("  ✅ CORRELACIÓ FORTAMENT SIGNIFICATIVA")
-        print("     - La correlació NO és per atzar (p < 0.05)")
-        print("     - Força de la correlació: FORTA (ρ > 0.5)")
+        print("  [OK] STRONGLY SIGNIFICANT CORRELATION")
+        print("     - The correlation is NOT due to chance (p < 0.05)")
+        print("     - Correlation strength: STRONG (rho > 0.5)")
         if rho > 0.7:
-            print("     - La predicció és molt robusta")
+            print("     - The prediction is very robust")
     elif rho > 0.3 and pval < 0.05:
-        print("  ✅ CORRELACIÓ SIGNIFICATIVA")
-        print("     - La correlació NO és per atzar (p < 0.05)")
-        print("     - Força de la correlació: MODERADA (0.3 < ρ < 0.5)")
+        print("  [OK] SIGNIFICANT CORRELATION")
+        print("     - The correlation is NOT due to chance (p < 0.05)")
+        print("     - Correlation strength: MODERATE (0.3 < rho < 0.5)")
     elif pval < 0.05:
-        print("  ⚠️ CORRELACIÓ FEBLE PERÒ SIGNIFICATIVA")
-        print("     - La correlació NO és per atzar (p < 0.05)")
-        print("     - Però la força és feble (ρ < 0.3)")
+        print("  [!] WEAK BUT SIGNIFICANT CORRELATION")
+        print("     - The correlation is NOT due to chance (p < 0.05)")
+        print("     - But the strength is weak (rho < 0.3)")
     else:
-        print("  ❌ CORRELACIÓ NO SIGNIFICATIVA")
-        print(f"     - La correlació PODRIA SER PER ATZAR (p = {pval:.4f} > 0.05)")
-        print("     - Revisa: mida mostral, qualitat de les dades, o paràmetres")
+        print("  [X] NON-SIGNIFICANT CORRELATION")
+        print(f"     - The correlation COULD BE DUE TO CHANCE (p = {pval:.4f} > 0.05)")
+        print("     - Check: sample size, data quality, or parameters")
 
-    # Comparativa amb el p-valor paramètric
-    print(f"\n  Comparativa de p-valors:")
-    print(f"    - Paramètric (scipy): {sig_results['pval_parametric']:.4e}")
+    # Comparison against the parametric p-value
+    print(f"\n  P-value comparison:")
+    print(f"    - Parametric (scipy): {sig_results['pval_parametric']:.4e}")
     print(f"    - Bootstrap:          {sig_results['pval_bootstrap']:.4f}")
 
-    # Consells
-    print("\n  RECOMANACIONS:")
+    # Advice
+    print("\n  RECOMMENDATIONS:")
     if n < 30:
-        print("    ⚠️ Mostra petita (< 30) - els p-valors poden ser inestables")
+        print("    [!] Small sample (< 30) - the p-values may be unstable")
     if abs(rho - sig_results['rho_mean_random']) < 2 * sig_results['rho_std_random']:
-        print("    ⚠️ La correlació real està dins de 2σ de la distribució aleatòria")
-        print("       → Podria ser un fals positiu")
+        print("    [!] The real correlation lies within 2 sigma of the random distribution")
+        print("       -> It could be a false positive")
     elif pval < 0.01:
-        print("    ✅ Resultat molt robust (p < 0.01)")
+        print("    [OK] Very robust result (p < 0.01)")
 
 
 def main():
     print("=" * 70)
-    print("  CALIBRATGE TANIMOTO-Ki (Leave-One-Out)")
+    print("  TANIMOTO-Ki CALIBRATION (Leave-One-Out)")
     print("=" * 70)
 
-    print(f"\n  Llegint {BINDING_FILE}...")
+    print(f"\n  Reading {BINDING_FILE}...")
     df = pd.read_csv(BINDING_FILE)
     cas_col = df.columns[0]
     obp_name_list = list(df.columns[2:])
 
-    # Convert Ki values the same way main_nou.py does (censored values like
+    # Convert Ki values the same way main.py does (censored values like
     # ">X" are treated as X*1.1, a conservative estimate of the true Ki)
     def convert_ki(raw):
         if pd.isna(raw):
@@ -255,17 +255,17 @@ def main():
         binding_table[col] = binding_table[col].apply(convert_ki)
 
     n_known = int(binding_table[obp_name_list].notna().sum().sum())
-    print(f"  → {n_known} cel·les amb Ki conegut (s'usaran per validar)")
+    print(f"  -> {n_known} cells with a known Ki (they will be used to validate)")
 
-    print(f"\n  Carregant matriu Tanimoto...")
+    print(f"\n  Loading the Tanimoto matrix...")
     T_matrix, cas_to_pos = ti.load_tanimoto_data()
     idx_to_pos = ti.build_binding_idx_to_matrix_pos(binding_table, cas_col, cas_to_pos)
-    print(f"  → {len(idx_to_pos)}/{len(binding_table)} VOCs amb posició vàlida a la matriu")
+    print(f"  -> {len(idx_to_pos)}/{len(binding_table)} VOCs with a valid position in the matrix")
 
     # Grid search: run LOO validation for every (t_min, k, p) combination and
     # keep track of all of them so we can pick the winner by RMSE *among
-    # those that clear the coverage floor* (see MIN_COBERTURA above).
-    resultats = []
+    # those that clear the coverage floor* (see MIN_COVERAGE above).
+    results = []
     df_errs_by_combo = {}
 
     total_combos = len(T_MIN_VALUES) * len(K_VALUES) * len(P_VALUES)
@@ -275,85 +275,85 @@ def main():
         for k in K_VALUES:
             for p in P_VALUES:
                 combo_i += 1
-                print(f"\n  [{combo_i}/{total_combos}] Provant t_min={t_min}  k={k}  p={p}")
+                print(f"\n  [{combo_i}/{total_combos}] Trying t_min={t_min}  k={k}  p={p}")
                 rmse, df_err = ti.run_loo(
                     binding_table, T_matrix, idx_to_pos, obp_name_list,
                     t_min=t_min, k=k, p=p,
                 )
                 if rmse is None:
-                    print(f"     Sense prediccions vàlides amb aquesta combinació")
+                    print(f"     No valid predictions with this combination")
                     continue
 
                 n_pred = len(df_err)
-                cobertura = n_pred / n_known
-                print(f"    → RMSE={rmse:.3f}  (n={n_pred}, cobertura={cobertura:.1%})")
+                coverage = n_pred / n_known
+                print(f"    -> RMSE={rmse:.3f}  (n={n_pred}, coverage={coverage:.1%})")
 
                 combo_key = (t_min, k, p)
-                resultats.append({
+                results.append({
                     "t_min": t_min, "k": k, "p": p,
                     "RMSE": round(rmse, 4),
-                    "n_predits": n_pred,
-                    "cobertura": round(cobertura, 4),
+                    "n_predicted": n_pred,
+                    "coverage": round(coverage, 4),
                 })
                 df_errs_by_combo[combo_key] = df_err
 
-    if not resultats:
-        print("\n   Cap combinació ha donat resultats. Revisa la matriu Tanimoto.")
+    if not results:
+        print("\n   No combination produced results. Check the Tanimoto matrix.")
         return
 
     # Summary of all combinations tried, sorted by RMSE
-    df_resum = pd.DataFrame(resultats).sort_values("RMSE")
-    out1 = "results/loo_resum_combinacions.csv"
-    df_resum.round(2).to_csv(out1, index=False)
+    df_summary = pd.DataFrame(results).sort_values("RMSE")
+    out1 = "results/loo_summary_combinations.csv"
+    df_summary.round(2).to_csv(out1, index=False)
 
     print("\n" + "=" * 70)
-    print("  RESUM (ordenat per RMSE, més baix = millor)")
+    print("  SUMMARY (sorted by RMSE, lower = better)")
     print("=" * 70)
-    print(df_resum.to_string(index=False))
-    print(f"\n   Resum complet guardat a {out1}")
+    print(df_summary.to_string(index=False))
+    print(f"\n   Full summary saved to {out1}")
 
-    # Pick the winner: among combos with cobertura >= MIN_COBERTURA, take the
+    # Pick the winner: among combos with coverage >= MIN_COVERAGE, take the
     # lowest RMSE. If none clear that floor, fall back to the combo with the
     # highest coverage available (RMSE as tiebreaker) rather than silently
     # returning a barely-covered "best RMSE" combination.
-    qualifying = [r for r in resultats if r["cobertura"] >= MIN_COBERTURA]
+    qualifying = [r for r in results if r["coverage"] >= MIN_COVERAGE]
     if qualifying:
-        millor_r = min(qualifying, key=lambda r: r["RMSE"])
+        best_r = min(qualifying, key=lambda r: r["RMSE"])
     else:
-        print(f"\n   Cap combinació arriba a MIN_COBERTURA={MIN_COBERTURA:.0%}; "
-              f"s'agafa la de màxima cobertura disponible.")
-        millor_r = max(resultats, key=lambda r: (r["cobertura"], -r["RMSE"]))
+        print(f"\n   No combination reaches MIN_COVERAGE={MIN_COVERAGE:.0%}; "
+              f"falling back to the one with the highest available coverage.")
+        best_r = max(results, key=lambda r: (r["coverage"], -r["RMSE"]))
 
-    combo_key = (millor_r["t_min"], millor_r["k"], millor_r["p"])
-    millor = {
-        "rmse": millor_r["RMSE"],
-        "t_min": millor_r["t_min"],
-        "k": millor_r["k"],
-        "p": millor_r["p"],
+    combo_key = (best_r["t_min"], best_r["k"], best_r["p"])
+    best = {
+        "rmse": best_r["RMSE"],
+        "t_min": best_r["t_min"],
+        "k": best_r["k"],
+        "p": best_r["p"],
         "df_err": df_errs_by_combo[combo_key],
     }
 
     #  Detail of the winning combination
     print("\n" + "=" * 70)
-    print(f"  MILLOR COMBINACIÓ: t_min={millor['t_min']}  k={millor['k']}  "
-          f"p={millor['p']}  (RMSE={millor['rmse']:.3f})")
+    print(f"  BEST COMBINATION: t_min={best['t_min']}  k={best['k']}  "
+          f"p={best['p']}  (RMSE={best['rmse']:.3f})")
     print("=" * 70)
 
-    df_err = millor["df_err"]
-    out2 = "results/loo_errors_detall.csv"
+    df_err = best["df_err"]
+    out2 = "results/loo_errors_detail.csv"
     df_err.round(2).to_csv(out2, index=False)
-    print(f"  ✓ Errors individuals guardats a {out2}")
+    print(f"  OK Individual errors saved to {out2}")
 
-    resum_bins = ti.rmse_by_tmax_bin(df_err)
+    summary_bins = ti.rmse_by_tmax_bin(df_err)
     out3 = "results/loo_rmse_per_tmax.csv"
-    resum_bins.round(2).to_csv(out3)
-    print(f"\n  RMSE desglossat per similitud del millor veí (T_max):")
-    print(resum_bins.to_string())
-    print(f"\n  ✓ Guardat a {out3}")
+    summary_bins.round(2).to_csv(out3)
+    print(f"\n  RMSE broken down by the similarity of the best neighbour (T_max):")
+    print(summary_bins.to_string())
+    print(f"\n  OK Saved to {out3}")
 
     #  SPEARMAN SIGNIFICANCE TEST (via bootstrapping/permutation)
     print("\n" + "=" * 70)
-    print("  CALCULANT TEST DE SIGNIFICÀNCIA DE SPEARMAN...")
+    print("  COMPUTING THE SPEARMAN SIGNIFICANCE TEST...")
     print("=" * 70)
 
     sig_results = significance_test(df_err, n_permutations=5000, seed=42)
@@ -372,7 +372,7 @@ def main():
         'n_permutations': sig_results['n_permutations']
     }
     pd.DataFrame([sig_summary]).round(2).to_csv("results/spearman_significance.csv", index=False)
-    print(f"  ✓ Resum de significància guardat a results/spearman_significance.csv")
+    print(f"  OK Significance summary saved to results/spearman_significance.csv")
 
     # Print interpretation
     interpret_significance(sig_results)
@@ -391,47 +391,47 @@ def main():
         min(df_err["real_pki"].min(), df_err["pred_pki"].min()),
         max(df_err["real_pki"].max(), df_err["pred_pki"].max()),
     ]
-    plt.plot(lims, lims, color="gray", linestyle="--", linewidth=1, label="Predicció perfecta")
+    plt.plot(lims, lims, color="gray", linestyle="--", linewidth=1, label="Perfect prediction")
 
-    plt.xlabel("pKi real (experimental)")
-    plt.ylabel("pKi predit (Tanimoto read-across)")
+    plt.xlabel("Real pKi (experimental)")
+    plt.ylabel("Predicted pKi (Tanimoto read-across)")
 
-    # Afegir informació de significància al títol
-    title = (f"Predicció vs Real (LOO)\n"
-             f"Spearman ρ = {rho:.3f}  (p = {pval:.2e})\n"
-             f"RMSE = {millor['rmse']:.3f}  n = {len(df_err)}")
+    # Add the significance information to the title
+    title = (f"Predicted vs Real (LOO)\n"
+             f"Spearman rho = {rho:.3f}  (p = {pval:.2e})\n"
+             f"RMSE = {best['rmse']:.3f}  n = {len(df_err)}")
     plt.title(title)
     plt.legend()
     plt.tight_layout()
 
     out4 = "results/spearman_scatter.png"
     plt.savefig(out4, dpi=150)
-    print(f"  ✓ Gràfica guardada a {out4}")
+    print(f"  OK Plot saved to {out4}")
 
     print("\n" + "=" * 70)
-    print("  INTERPRETACIÓ DEL RMSE")
+    print("  RMSE INTERPRETATION")
     print("=" * 70)
-    print("  RMSE ≤ 0.3 (log10 Ki)  →  factor d'error ≤ ~2x   → BO")
-    print("  RMSE 0.3–0.5           →  factor d'error ~2-3x   → acceptable")
-    print("  RMSE > 0.5             →  factor d'error > 3x    → massa soroll")
-    print(f"\n  → Paràmetres recomanats per al pas seguent (generate_imputed_csvs.py):")
-    print(f"      T_MIN = {millor['t_min']}")
-    print(f"      K     = {millor['k']}")
-    print(f"      P     = {millor['p']}")
+    print("  RMSE <= 0.3 (log10 Ki)  ->  error factor <= ~2x   -> GOOD")
+    print("  RMSE 0.3-0.5            ->  error factor ~2-3x    -> acceptable")
+    print("  RMSE > 0.5              ->  error factor > 3x     -> too noisy")
+    print(f"\n  -> Recommended parameters for the next step (generate_imputed_csvs.py):")
+    print(f"      T_MIN = {best['t_min']}")
+    print(f"      K     = {best['k']}")
+    print(f"      P     = {best['p']}")
 
-    # Resum final
+    # Final summary
     print("\n" + "=" * 70)
-    print("  RESUM FINAL DE LA VALIDACIÓ")
+    print("  FINAL VALIDATION SUMMARY")
     print("=" * 70)
-    print(f"  Nombre de prediccions: {len(df_err)}")
-    print(f"  RMSE: {millor['rmse']:.4f}")
-    print(f"  Spearman ρ: {rho:.4f}")
-    print(f"  P-valor (bootstrap): {sig_results['pval_bootstrap']:.4f}")
-    print(f"  Cobertura: {len(df_err)/n_known:.2%}")
+    print(f"  Number of predictions: {len(df_err)}")
+    print(f"  RMSE: {best['rmse']:.4f}")
+    print(f"  Spearman rho: {rho:.4f}")
+    print(f"  P-value (bootstrap): {sig_results['pval_bootstrap']:.4f}")
+    print(f"  Coverage: {len(df_err)/n_known:.2%}")
     if sig_results['pval_bootstrap'] < 0.05:
-        print("\n  ✅ CONCLUSIÓ: La correlació és SIGNIFICATIVA (no és per atzar)")
+        print("\n  [OK] CONCLUSION: the correlation is SIGNIFICANT (not due to chance)")
     else:
-        print("\n  ⚠️ CONCLUSIÓ: La correlació PODRIA SER PER ATZAR (p ≥ 0.05)")
+        print("\n  [!] CONCLUSION: the correlation COULD BE DUE TO CHANCE (p >= 0.05)")
 
 
 if __name__ == "__main__":

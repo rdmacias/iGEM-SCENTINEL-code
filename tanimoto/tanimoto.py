@@ -24,7 +24,7 @@ COMPOUND_INFO_FILE = "Compound_info (1).csv"
 # Output files (matrix + index used to look up a VOC's row/column by CAS number)
 OUT_MATRIX_FILE = "tanimoto_data/tanimoto_matrix.npy"
 OUT_INDEX_FILE = "tanimoto_data/voc_index.json"
-OUT_MISSING_FILE = "tanimoto_data/voc_sense_smiles.csv"
+OUT_MISSING_FILE = "tanimoto_data/voc_missing_smiles.csv"
 
 # Morgan (ECFP-like) fingerprint parameters
 MORGAN_RADIUS = 2
@@ -55,7 +55,7 @@ def build_tanimoto_matrix(fingerprints):
     matrix = np.full((n, n), np.nan, dtype=np.float32)
 
     valid_idx = [i for i, fp in enumerate(fingerprints) if fp is not None]
-    print(f"\n  Calculant Tanimoto per a {len(valid_idx)}/{n} VOCs amb SMILES vàlid...")
+    print(f"\n  Computing Tanimoto for {len(valid_idx)}/{n} VOCs with a valid SMILES...")
 
     for count, i in enumerate(valid_idx, 1):
         fp_i = fingerprints[i]
@@ -66,7 +66,7 @@ def build_tanimoto_matrix(fingerprints):
         for sim, j in zip(sims, valid_idx):
             matrix[i, j] = sim
         if count % 50 == 0 or count == len(valid_idx):
-            print(f"    {count}/{len(valid_idx)} VOCs processats...")
+            print(f"    {count}/{len(valid_idx)} VOCs processed...")
 
     return matrix
 
@@ -75,23 +75,23 @@ def build_tanimoto_matrix(fingerprints):
 
 def main():
     print("="*70)
-    print("  GENERACIÓ MATRIU TANIMOTO VOC×VOC")
+    print("  BUILDING THE VOC x VOC TANIMOTO MATRIX")
     print("="*70)
 
     if not os.path.isfile(BINDING_FILE):
-        print(f"   ERROR: no es troba '{BINDING_FILE}' en aquesta carpeta.")
+        print(f"   ERROR: '{BINDING_FILE}' not found in this folder.")
         return
 
-    print(f"\n  Llegint {BINDING_FILE}...")
+    print(f"\n  Reading {BINDING_FILE}...")
     df = pd.read_csv(BINDING_FILE)
     cas_col, name_col = df.columns[0], df.columns[1]
-    print(f"  {len(df)} VOCs trobats")
+    print(f"  {len(df)} VOCs found")
 
     # Look up each VOC's SMILES string by CAS number from the compound info file
     compound_info_smiles, info_path = ti.load_compound_info_smiles(COMPOUND_INFO_FILE)
-    print(f"\n  Usant {info_path} com a font única de SMILES...")
+    print(f"\n  Using {info_path} as the single source of SMILES...")
     cas_list, smiles_list = [], []
-    sense_smiles = []  # VOCs for which no SMILES could be resolved
+    missing_smiles = []  # VOCs for which no SMILES could be resolved
 
     for idx, row in df.iterrows():
         cas = str(row[cas_col]).strip()
@@ -106,41 +106,41 @@ def main():
             print(f"    [{idx+1}/{len(df)}] {status}  {str(name)[:50]}")
 
         if not smiles:
-            sense_smiles.append({"CAS-number": cas, "Compound name": name})
+            missing_smiles.append({"CAS-number": cas, "Compound name": name})
 
     # Save the list of VOCs that couldn't be resolved for manual review
-    if sense_smiles:
-        pd.DataFrame(sense_smiles).to_csv(OUT_MISSING_FILE, index=False)
-        print(f"   {len(sense_smiles)} VOCs sense SMILES resolt → {OUT_MISSING_FILE}")
-        print(f"    (no participaran a la matriu Tanimoto; revisa'ls a mà si vols)")
+    if missing_smiles:
+        pd.DataFrame(missing_smiles).to_csv(OUT_MISSING_FILE, index=False)
+        print(f"   {len(missing_smiles)} VOCs with no resolved SMILES -> {OUT_MISSING_FILE}")
+        print(f"    (they are left out of the Tanimoto matrix; review them by hand if you want)")
 
-    print(f"\n  Generant fingerprints Morgan (radius={MORGAN_RADIUS}, nBits={MORGAN_NBITS})...")
+    print(f"\n  Generating Morgan fingerprints (radius={MORGAN_RADIUS}, nBits={MORGAN_NBITS})...")
     fingerprints = [build_fingerprint(s) for s in smiles_list]
     n_ok = sum(1 for fp in fingerprints if fp is not None)
-    print(f"  → {n_ok}/{len(fingerprints)} fingerprints generats correctament")
+    print(f"  -> {n_ok}/{len(fingerprints)} fingerprints generated successfully")
 
     # Build the full similarity matrix and persist it alongside its CAS index
     matrix = build_tanimoto_matrix(fingerprints)
 
     np.save(OUT_MATRIX_FILE, matrix)
-    print(f"\n   Matriu Tanimoto ({matrix.shape[0]}×{matrix.shape[1]}) desada a {OUT_MATRIX_FILE}")
+    print(f"\n   Tanimoto matrix ({matrix.shape[0]}x{matrix.shape[1]}) saved to {OUT_MATRIX_FILE}")
 
     with open(OUT_INDEX_FILE, "w", encoding="utf-8") as f:
         json.dump(cas_list, f, indent=2, ensure_ascii=False)
-    print(f"   Índex (ordre CAS) desat a {OUT_INDEX_FILE}")
+    print(f"   Index (CAS order) saved to {OUT_INDEX_FILE}")
 
     print("\n" + "="*70)
-    print("  RESUM")
+    print("  SUMMARY")
     print("="*70)
-    print(f"  VOCs totals             : {len(df)}")
-    print(f"  Amb SMILES resolt       : {n_ok}")
-    print(f"  Sense SMILES (revisar)  : {len(sense_smiles)}")
-    print(f"\n  Per carregar la matriu després:")
+    print(f"  Total VOCs              : {len(df)}")
+    print(f"  With resolved SMILES    : {n_ok}")
+    print(f"  Without SMILES (review) : {len(missing_smiles)}")
+    print(f"\n  To load the matrix later:")
     print(f"    import numpy as np, json")
     print(f"    matrix = np.load('{OUT_MATRIX_FILE}')")
     print(f"    cas_index = json.load(open('{OUT_INDEX_FILE}'))")
-    print(f"    i = cas_index.index('CAS_DEL_VOC')")
-    print(f"    fila_similituds = matrix[i]   # Tanimoto contra tots els altres VOCs")
+    print(f"    i = cas_index.index('VOC_CAS')")
+    print(f"    similarity_row = matrix[i]   # Tanimoto against every other VOC")
 
 
 if __name__ == "__main__":

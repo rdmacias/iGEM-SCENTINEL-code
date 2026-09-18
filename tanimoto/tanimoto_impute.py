@@ -1,17 +1,6 @@
 """
 tanimoto_impute.py
-─
-Mòdul base per al protocol Tanimoto-Ki (read-across / vNN).
-Implementa exactament les funcions del Tanimoto_Ki_Protocol.docx:
-  - impute_ki_tanimoto()  → predicció puntual (Ki_pred + Ki_lower conservador)
-  - run_loo()             → validació Leave-One-Out (RMSE)
-  - fill_gaps()            → omple tots els buits de binding_table
-
-Connecta amb la matriu Tanimoto que ja tens generada
-(tanimoto_data/tanimoto_matrix.npy + tanimoto_data/voc_index.json), fent l'enllaç
-CAS ↔ posició a la matriu ↔ fila de binding_table.
-
---------------------------------------------------------------------
+------------------
 Core module for the Tanimoto-Ki protocol (read-across / weighted k-NN).
 Implements the functions described in Tanimoto_Ki_Protocol.docx:
   - impute_ki_tanimoto()  -> single-cell prediction (central Ki_pred +
@@ -64,7 +53,7 @@ def load_compound_info_smiles(compound_info_path=None):
     """Load CAS -> SMILES mapping from the compound metadata CSV."""
     info_path = _resolve_compound_info_path(compound_info_path)
     if info_path is None:
-        raise FileNotFoundError("No s'ha trobat el fitxer de metadades amb SMILES")
+        raise FileNotFoundError("Could not find the compound metadata file with SMILES")
 
     df = pd.read_csv(info_path)
     normalized = {col.strip().lower(): col for col in df.columns}
@@ -78,7 +67,7 @@ def load_compound_info_smiles(compound_info_path=None):
     )
 
     if cas_col is None or smiles_col is None:
-        raise ValueError(f"El fitxer {info_path} no té columnes CAS/SMILES reconegudes")
+        raise ValueError(f"File {info_path} has no recognizable CAS/SMILES columns")
 
     # Build CAS -> SMILES dict, keeping the first SMILES seen for each CAS
     mapping = {}
@@ -280,11 +269,11 @@ def run_loo(binding_table, T_matrix, idx_to_pos, obp_name_list,
             })
 
         if col_i % 50 == 0 or col_i == total_cols:
-            print(f"    LOO: {col_i}/{total_cols} columnes OBP processades "
-                  f"({len(errors)} prediccions acumulades)...")
+            print(f"    LOO: {col_i}/{total_cols} OBP columns processed "
+                  f"({len(errors)} predictions accumulated)...")
 
     if not errors:
-        print("  LOO no ha pogut validar cap cel·la (revisa t_min/k).")
+        print("  LOO could not validate any cell (check t_min/k).")
         return None, pd.DataFrame()
 
     df_err = pd.DataFrame(errors)
@@ -299,11 +288,11 @@ def rmse_by_tmax_bin(df_err, bins=(0.35, 0.5, 0.7, 1.01)):
     labels = [f"{bins[i]:.2f}–{bins[i+1]:.2f}" for i in range(len(bins) - 1)]
     df_err = df_err.copy()
     df_err["bin"] = pd.cut(df_err["T_max"], bins=bins, labels=labels, right=False)
-    resumen = df_err.groupby("bin")["error"].apply(
+    summary = df_err.groupby("bin")["error"].apply(
         lambda e: np.sqrt((e ** 2).mean())
     ).rename("RMSE")
-    counts = df_err.groupby("bin").size().rename("n_cel·les")
-    return pd.concat([resumen, counts], axis=1)
+    counts = df_err.groupby("bin").size().rename("n_cells")
+    return pd.concat([summary, counts], axis=1)
 
 
 #  FILL ALL REAL GAPS
@@ -311,15 +300,15 @@ def rmse_by_tmax_bin(df_err, bins=(0.35, 0.5, 0.7, 1.01)):
 def fill_gaps(binding_table, T_matrix, idx_to_pos, obp_name_list,
               t_min=0.35, k=5, p=2.0, z=1.0):
     """
-    Omple TOTS els buits reals de binding_table (no és LOO, és l'aplicació
-    final). Treballa sobre una còpia: mai sobreescriu cel·les mesurades.
+    Fill in EVERY real gap in binding_table (this is not LOO, it is the final
+    application). Works on a copy: measured cells are never overwritten.
 
-    Retorna:
-      binding_imputed : còpia de binding_table amb Ki_lower_uM a les cel·les
-                         imputades (valor conservador, per a selectivitat)
-      binding_pred     : còpia paral·lela amb Ki_pred_uM (valor central,
-                         per a mostrar/reportar)
-      diag_table       : taula llarga amb una fila per cada cel·la imputada
+    Returns:
+      binding_imputed : copy of binding_table with Ki_lower_uM in the imputed
+                         cells (conservative value, used for selectivity)
+      binding_pred     : parallel copy with Ki_pred_uM (central value, used
+                         for display/reporting)
+      diag_table       : long table with one row per imputed cell
                          (CAS, OBP, Ki_pred, Ki_lower, T_max, sigma, n_donors,
                          decision: 'confident' / 'exploratory' / 'no_impute')
     """
@@ -363,8 +352,8 @@ def fill_gaps(binding_table, T_matrix, idx_to_pos, obp_name_list,
             })
 
         if col_i % 50 == 0 or col_i == total_cols:
-            print(f"    Omplint: {col_i}/{total_cols} columnes OBP processades "
-                  f"({len(diag_rows)} cel·les imputades fins ara)...")
+            print(f"    Filling: {col_i}/{total_cols} OBP columns processed "
+                  f"({len(diag_rows)} cells imputed so far)...")
 
     diag_table = pd.DataFrame(diag_rows)
     return binding_imputed, binding_pred, diag_table
