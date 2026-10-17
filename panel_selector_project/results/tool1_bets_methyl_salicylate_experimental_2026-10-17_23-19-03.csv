@@ -1,0 +1,8 @@
+bet,evidence,kind,against,off_by,OBP,compound,verdict
+hexanal binds DcitOBP3 weakly or not at all (Ki > 7.94 uM),"not measured; prediction Ki 3.77 uM, conf 0.47, left out (counted as 'does not bind')",unmeasured,True,1.0,DcitOBP3,hexanal,BREAKS (prediction)
+L-Linalool binds DcitOBP3 weakly or not at all (Ki > 25.1 uM),"not measured; prediction Ki 3.09 uM, conf 0.59, left out (counted as 'does not bind')",unmeasured,True,1.0,DcitOBP3,L-Linalool,BREAKS (prediction)
+Ki of methyl salicylate on DcitOBP3 = 7.01 uM is accurate (fails if it is 4% higher),"measured, single value",fragile value,False,1.0424657608411214,DcitOBP3,methyl salicylate,fragile
+Ki of r-limonene on DcitOBP3 = 8.25 uM is accurate (fails if it is 6% lower),"measured, single value",fragile value,False,1.060477250785988,DcitOBP3,r-limonene,fragile
+Ki of r-limonene on AlinOBP6 = 11.3 uM is accurate (fails if it is 6% higher),"measured, single value",fragile value,False,1.0643701824533598,AlinOBP6,r-limonene,fragile
+Ki of 1-hexanol on DcitOBP3 = 9.05 uM is accurate (fails if it is 19% lower),"measured, single value",fragile value,False,1.1877476036437646,DcitOBP3,1-hexanol,fragile
+benzaldehyde binds DcitOBP3 weakly or not at all (Ki > 10 uM),"no measurement, no prediction (counted as 'does not bind')",unmeasured,False,3.0,DcitOBP3,benzaldehyde,risk

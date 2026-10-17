@@ -1,0 +1,11 @@
+panel_rank,OBP,compound,role,status,Ki_used_uM,confidence,tanimoto_decision,verdict,breaks_if,fold_to_break,Ki_predicted_uM,residual_if_predicted
+3,LmigOBP4,methyl salicylate,target,imputed,4.367,0.4834666666666667,confident,risk,Ki >= 12.6,2.8828152319536695,4.367,0.15464249101138083
+3,LmigOBP4,1-hexanol,interferent,imputed,13.55,0.7911111111111111,confident,risk,Ki <= 3.55,3.818908871863335,13.55,0.15464249101138083
+3,LmigOBP4,r-limonene,interferent,no data,,,-,risk,Ki <= 7.08,4.237612633868262,,
+3,LmigOBP4,L-Linalool,interferent,imputed,14.58,0.5,confident,risk,Ki <= 2.51,5.804402546669987,14.58,0.15464249101138083
+1,DcitOBP3,benzaldehyde,interferent,no data,,,-,safe,never,,,
+1,DcitOBP3,hexanal,interferent,imputed,3.7669999999999995,0.47,confident,safe,never,,3.7669999999999995,0.15464249101138083
+1,DcitOBP3,L-Linalool,interferent,imputed,3.092,0.5933333333333334,confident,safe,never,,3.092,0.15464249101138083
+2,PameOBP24,1-hexanol,interferent,imputed,10.03,0.42315,confident,safe,never,,10.03,0.15464249101138083
+2,PameOBP24,L-Linalool,interferent,imputed,6.81,0.49506666666666677,confident,safe,never,,6.81,0.15464249101138083
+2,PameOBP24,hexanal,interferent,imputed,4.286,0.4963199999999999,exploratory,safe,never,,4.286,0.15464249101138083

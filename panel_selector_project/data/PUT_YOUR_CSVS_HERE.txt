@@ -1,0 +1,6 @@
+Copy here (or run from the folder that holds them):
+  Compound_OBP_binding.csv
+  Compound_OBP_binding_imputed_pred.csv
+  Compound_OBP_binding_imputed_lower.csv
+  tanimoto_imputation_diagnostic.csv
+  interferents_example.txt / interferents_matching.txt

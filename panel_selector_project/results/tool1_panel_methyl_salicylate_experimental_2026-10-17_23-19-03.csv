@@ -1,0 +1,4 @@
+step,OBP,added_by,residual,gain,Ki_target_uM,selectivity,interferents_with_data,c2,cells_measured,cells_imputed,mean_confidence,covers,stop_reason,passes,final_residual,verdict,noise,source
+1,DcitOBP3,start,0.0,,7.01,1.1768901569186876,2,0.4,3,0,1.0,,target_crossed,True,0.05310303541934481,WEAK,0.05,experimental
+2,AlinOBP6,search,0.008504558695188721,0.008504558695188721,33.0,0.3418181818181818,4,0.8,5,0,1.0,,target_crossed,True,0.05310303541934481,WEAK,0.05,experimental
+3,LstiGOBP2,search,0.05310303541934481,0.04459847672415609,55.0,0.11818181818181817,4,0.8,5,0,1.0,,target_crossed,True,0.05310303541934481,WEAK,0.05,experimental

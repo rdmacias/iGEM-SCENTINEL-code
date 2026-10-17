@@ -26,20 +26,20 @@ def S():
 
 
 def test_single_sensor_residual_is_zero(S):
-    # "con una sola proteína el residuo era 0" -- one equation, one degree
+    # "with a single protein the residual was 0" -- one equation, one degree
     # of freedom in nonanal is enough to hit it exactly.
     r = best_imitation_residual(S, ["DcitOBP3"], "MeSA", ["nonanal", "hexanol", "limonene"])
     assert r == pytest.approx(0.0, abs=1e-9)
 
 
 def test_two_sensor_residual_matches_worked_example(S):
-    # "con dos saltó a 0.17" (text gives 0.1718 with an unrounded x*).
+    # "with two it jumped to 0.17" (text gives 0.1718 with an unrounded x*).
     r = best_imitation_residual(S, ["DcitOBP3", "OBP-B"], "MeSA", ["nonanal", "hexanol", "limonene"])
     assert r == pytest.approx(0.1718, abs=0.005)
 
 
 def test_third_redundant_sensor_barely_helps(S):
-    # "con las tres a 0.1731 -- una ganancia de nada."
+    # "with all three, 0.1731 -- practically no gain."
     r2 = best_imitation_residual(S, ["DcitOBP3", "OBP-B"], "MeSA", ["nonanal", "hexanol", "limonene"])
     r3 = best_imitation_residual(S, ["DcitOBP3", "OBP-B", "OBP-C"], "MeSA", ["nonanal", "hexanol", "limonene"])
     assert r3 - r2 < 0.01
@@ -95,3 +95,25 @@ def test_greedy_discrimination_avoids_pure_decoy(S):
         S, class_a_profiles=healthy, class_b_profiles=diseased, metric="fisher", min_gain=0.05
     )
     assert "OBP-Decoy" not in result.panel
+
+
+def test_start_with_forces_first_obp_then_finds_complement(S):
+    # Start from OBP-B (as if SCENTINEL v3 had chosen it): the search must keep
+    # it first and add DcitOBP3 as the complement, reaching the same 0.17 residual.
+    res = greedy_panel_for_specificity(
+        S, target="MeSA", interferents=["nonanal", "hexanol", "limonene"],
+        noise=0.05, initial=["OBP-B"],
+    )
+    assert res.panel[0] == "OBP-B"
+    assert res.panel == ["OBP-B", "DcitOBP3"]
+    assert math.isnan(res.result.trace[0].gain)
+    assert res.stop_reason == "target_crossed"
+    assert res.residual_trace[-1] == pytest.approx(0.1718, abs=0.005)
+
+
+def test_start_with_does_not_add_duplicate(S):
+    res = greedy_panel_for_specificity(
+        S, target="MeSA", interferents=["nonanal", "hexanol", "limonene"],
+        noise=0.05, initial=["DcitOBP3", "DcitOBP3"],
+    )
+    assert res.panel.count("DcitOBP3") == 1

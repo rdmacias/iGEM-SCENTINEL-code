@@ -1,0 +1,6 @@
+panel_rank,OBP,compound,role,status,Ki_used_uM,confidence,tanimoto_decision,verdict,breaks_if,fold_to_break,Ki_predicted_uM,residual_if_predicted
+1,DcitOBP3,hexanal,interferent,not used,,0.47,confident,BREAKS (prediction),Ki <= 7.94,1.0,3.767,0.030360342673137256
+1,DcitOBP3,L-Linalool,interferent,not used,,0.5933333333333334,confident,BREAKS (prediction),Ki <= 25.1,1.0,3.092,0.000749499486712443
+1,DcitOBP3,benzaldehyde,interferent,no data,,,-,risk,Ki <= 10,3.0,,
+2,AlinOBP6,L-Linalool,interferent,not used,,0.5925,confident,safe,never,,18.07,0.05310303541934481
+3,LstiGOBP2,r-limonene,interferent,not used,,0.5,no_diag,safe,never,,55.0,0.056790238394191034

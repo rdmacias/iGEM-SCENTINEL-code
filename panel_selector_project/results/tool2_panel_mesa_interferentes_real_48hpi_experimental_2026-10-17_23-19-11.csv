@@ -1,0 +1,4 @@
+step,OBP,J_panel,misclassified,gain,n_measured,stop_reason,verdict,source,mode
+1,GmolPBP2,11.144667329161067,0.009123213424652601,,4,diminishing_returns,SOLID,experimental,summary
+2,BminOBP9 P99A,13.200821932342778,0.005097761619694795,2.056154603181712,1,diminishing_returns,SOLID,experimental,summary
+3,AcerOBP11,13.421796348984008,0.004791272391638267,0.22097441664122996,3,diminishing_returns,SOLID,experimental,summary

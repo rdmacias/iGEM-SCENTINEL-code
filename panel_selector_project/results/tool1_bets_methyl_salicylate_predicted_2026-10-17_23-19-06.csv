@@ -1,0 +1,5 @@
+bet,evidence,kind,against,off_by,OBP,compound,verdict
+methyl salicylate binds LmigOBP4 at least this strongly: Ki < 12.6 uM,"not measured; prediction Ki 4.37 uM, conf 0.48, used",unmeasured,False,2.8828152319536695,LmigOBP4,methyl salicylate,risk
+1-hexanol binds LmigOBP4 weakly or not at all (Ki > 3.55 uM),"not measured; prediction Ki 13.6 uM, conf 0.79, used",unmeasured,False,3.818908871863335,LmigOBP4,1-hexanol,risk
+r-limonene binds LmigOBP4 weakly or not at all (Ki > 7.08 uM),"no measurement, no prediction (counted as 'does not bind')",unmeasured,False,4.237612633868262,LmigOBP4,r-limonene,risk
+L-Linalool binds LmigOBP4 weakly or not at all (Ki > 2.51 uM),"not measured; prediction Ki 14.6 uM, conf 0.50, used",unmeasured,False,5.804402546669987,LmigOBP4,L-Linalool,risk
