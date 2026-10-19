@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+.venv/
+
+# Resultados generados (la app SÍ necesita tanimoto_diag_table.csv, se mantiene)
+data/results/*
+!data/results/tanimoto_diag_table.csv
+results/
+*.pdf

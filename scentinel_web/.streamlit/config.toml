@@ -1,0 +1,27 @@
+[theme]
+base = "light"
+primaryColor = "#1e7a5c"
+backgroundColor = "#f6f7f8"
+secondaryBackgroundColor = "#ffffff"
+textColor = "#1c2228"
+linkColor = "#1e7a5c"
+borderColor = "#e2e5e9"
+showWidgetBorder = true
+baseRadius = "6px"
+font = "Rubik:https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600&display=swap"
+codeFont = "ui-monospace, Menlo, Consolas, monospace"
+baseFontSize = 14
+
+[theme.sidebar]
+backgroundColor = "#ffffff"
+secondaryBackgroundColor = "#ffffff"
+
+[server]
+headless = true
+maxUploadSize = 20
+
+[client]
+toolbarMode = "minimal"
+
+[browser]
+gatherUsageStats = false

@@ -1,0 +1,7 @@
+# Common interfering VOCs in the vineyard
+# Lines starting with # and blank lines are ignored
+r-limonene
+L-Linalool
+hexanal
+benzaldehyde
+1-hexanol
